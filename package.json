@@ -5,11 +5,20 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "cli": "node index.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.109.1",
     "@google/genai": "^2.10.0",
-    "dotenv": "^16.4.5"
+    "@tailwindcss/postcss": "^4.3.2",
+    "dotenv": "^16.4.5",
+    "next": "^16.2.10",
+    "postcss": "^8.5.16",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "tailwindcss": "^4.3.2"
   }
 }
