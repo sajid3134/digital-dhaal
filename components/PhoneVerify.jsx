@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { PhoneIcon } from "./Icons.jsx";
 
-// Banner + inline flow to verify a phone number. Currently demo mode:
-// the code is printed to the server terminal instead of a real SMS.
-export default function PhoneVerify() {
+// Slim banner + inline flow to verify a phone number from inside the chat
+// (for users who skipped the /verify step). Demo mode: code prints to the
+// server terminal instead of a real SMS.
+export default function PhoneVerify({ t, tv }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [step, setStep] = useState("phone"); // "phone" | "code" | "done"
+  const [step, setStep] = useState("phone");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
@@ -26,12 +28,12 @@ export default function PhoneVerify() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "সমস্যা হয়েছে — আবার চেষ্টা করুন।");
+        setError(data.error || "…");
         return null;
       }
       return data;
     } catch {
-      setError("সংযোগে সমস্যা হয়েছে।");
+      setError("…");
       return null;
     } finally {
       setBusy(false);
@@ -59,7 +61,7 @@ export default function PhoneVerify() {
   if (step === "done") {
     return (
       <div className="bg-green-50 border-b border-green-100 px-4 py-2.5 text-center text-sm text-green-700">
-        ✓ নম্বর যাচাই সম্পন্ন — ধন্যবাদ!
+        {t.verifiedNote}
       </div>
     );
   }
@@ -69,14 +71,15 @@ export default function PhoneVerify() {
       <div className="max-w-3xl mx-auto px-4 py-2.5">
         {!open ? (
           <div className="flex items-center justify-between gap-3 text-sm">
-            <span className="text-amber-800">
-              📱 মোবাইল নম্বর যাচাই করুন — আপনার কেস দ্রুত ও নিরাপদে এগোবে
+            <span className="text-amber-800 flex items-center gap-2">
+              <PhoneIcon width={15} height={15} />
+              {t.verifyBanner}
             </span>
             <button
               onClick={() => setOpen(true)}
               className="shrink-0 font-semibold text-amber-900 underline underline-offset-2"
             >
-              যাচাই করুন
+              {t.verifyAction}
             </button>
           </div>
         ) : (
@@ -88,7 +91,7 @@ export default function PhoneVerify() {
               <input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="01XXXXXXXXX"
+                placeholder={tv.phonePlaceholder}
                 inputMode="numeric"
                 required
                 className="flex-1 rounded-xl border border-amber-200 bg-white px-3.5 py-2 text-sm outline-none focus:border-amber-400"
@@ -97,7 +100,7 @@ export default function PhoneVerify() {
               <input
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                placeholder="৬ সংখ্যার কোড"
+                placeholder={tv.codePlaceholder}
                 inputMode="numeric"
                 maxLength={6}
                 required
@@ -109,7 +112,7 @@ export default function PhoneVerify() {
               disabled={busy}
               className="rounded-xl bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50"
             >
-              {busy ? "…" : step === "phone" ? "কোড পাঠান" : "যাচাই করুন"}
+              {busy ? "…" : step === "phone" ? tv.sendBtn : tv.verifyBtn}
             </button>
             {step === "code" && (
               <button
@@ -117,14 +120,12 @@ export default function PhoneVerify() {
                 onClick={() => setStep("phone")}
                 className="text-xs text-amber-800 underline"
               >
-                নম্বর বদলান
+                {tv.changeNumber}
               </button>
             )}
           </form>
         )}
-        {notice && open && (
-          <p className="text-xs text-amber-700 mt-1.5">{notice}</p>
-        )}
+        {notice && open && <p className="text-xs text-amber-700 mt-1.5">{notice}</p>}
         {error && open && <p className="text-xs text-red-600 mt-1.5">{error}</p>}
       </div>
     </div>

@@ -4,6 +4,7 @@ import { getUserFromCookieStore } from "../lib/auth.js";
 import { getLang, STRINGS } from "../lib/i18n.js";
 import Navbar from "../components/Navbar.jsx";
 import SiteFooter from "../components/SiteFooter.jsx";
+import { ICONS, CheckIcon, MailIcon, LockIcon } from "../components/Icons.jsx";
 
 export default async function LandingPage() {
   const cookieStore = await cookies();
@@ -17,7 +18,6 @@ export default async function LandingPage() {
 
       {/* ---------- Hero ---------- */}
       <section className="relative overflow-hidden">
-        {/* soft background blobs */}
         <div className="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full bg-teal-200/30 blur-3xl animate-blob" />
         <div className="pointer-events-none absolute top-40 -right-32 w-[28rem] h-[28rem] rounded-full bg-amber-100/40 blur-3xl animate-blob-slow" />
 
@@ -49,7 +49,10 @@ export default async function LandingPage() {
                 {t.hero.ctaSecondary}
               </a>
             </div>
-            <p className="text-sm text-[var(--color-muted)] mt-7">🔒 {t.hero.never}</p>
+            <p className="flex items-center gap-2 text-sm text-[var(--color-muted)] mt-7">
+              <LockIcon width={15} height={15} className="text-[var(--color-primary)]" />
+              {t.hero.never}
+            </p>
           </div>
 
           {/* Chat mockup — makes it feel real */}
@@ -93,8 +96,8 @@ export default async function LandingPage() {
         <div className="relative border-y border-black/5 bg-white/70 backdrop-blur">
           <div className="max-w-6xl mx-auto px-5 py-5 grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
             {t.hero.stats.map((s) => (
-              <p key={s} className="text-[15px] font-medium text-[var(--color-muted)]">
-                <span className="text-[var(--color-primary)] mr-1.5">✓</span>
+              <p key={s} className="flex items-center justify-center gap-2 text-[15px] font-medium text-[var(--color-muted)]">
+                <CheckIcon width={15} height={15} className="text-[var(--color-primary)]" />
                 {s}
               </p>
             ))}
@@ -108,15 +111,18 @@ export default async function LandingPage() {
           {t.pillars.heading}
         </h2>
         <div className="grid sm:grid-cols-3 gap-5">
-          {t.pillars.items.map((p) => (
-            <div key={p.title} className="dd-card hover-lift p-7">
-              <div className="w-14 h-14 rounded-2xl bg-[var(--color-primary-soft)] flex items-center justify-center text-3xl mb-5">
-                {p.icon}
+          {t.pillars.items.map((p) => {
+            const Icon = ICONS[p.icon];
+            return (
+              <div key={p.title} className="dd-card hover-lift p-7">
+                <div className="w-14 h-14 rounded-2xl bg-[var(--color-primary-soft)] text-[var(--color-primary-dark)] flex items-center justify-center mb-5">
+                  <Icon width={26} height={26} />
+                </div>
+                <h3 className="font-bold text-xl mb-2">{p.title}</h3>
+                <p className="text-[var(--color-muted)] leading-relaxed">{p.text}</p>
               </div>
-              <h3 className="font-bold text-xl mb-2">{p.title}</h3>
-              <p className="text-[var(--color-muted)] leading-relaxed">{p.text}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -127,7 +133,6 @@ export default async function LandingPage() {
             {t.how.heading}
           </h2>
           <div className="grid sm:grid-cols-4 gap-8 relative">
-            {/* connecting line (desktop) */}
             <div className="hidden sm:block absolute top-7 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-[var(--color-primary)]/25 to-transparent" />
             {t.how.steps.map(([title, text], i) => (
               <div key={title} className="text-center relative">
@@ -150,24 +155,29 @@ export default async function LandingPage() {
         <p className="text-center text-[var(--color-muted)] text-lg mb-12">{t.resources.sub}</p>
 
         <div className="grid sm:grid-cols-3 gap-5 mb-12">
-          {t.resources.cards.map((c) => (
-            <div key={c.title} className="dd-card hover-lift p-6">
-              <div className="text-3xl mb-3">{c.icon}</div>
-              <h3 className="font-bold text-lg mb-3">{c.title}</h3>
-              <p className="text-[15px] leading-relaxed mb-3">
-                <span className="font-semibold text-[var(--color-primary-dark)]">
-                  {lang === "bn" ? "করণীয়: " : "Do: "}
-                </span>
-                {c.todo}
-              </p>
-              <p className="text-[15px] text-[var(--color-muted)] leading-relaxed">
-                <span className="font-semibold text-[var(--color-heading)]">
-                  {lang === "bn" ? "আইনে: " : "Law: "}
-                </span>
-                {c.law}
-              </p>
-            </div>
-          ))}
+          {t.resources.cards.map((cardItem) => {
+            const Icon = ICONS[cardItem.icon];
+            return (
+              <div key={cardItem.title} className="dd-card hover-lift p-6">
+                <div className="w-11 h-11 rounded-xl bg-[var(--color-primary-soft)] text-[var(--color-primary-dark)] flex items-center justify-center mb-4">
+                  <Icon width={22} height={22} />
+                </div>
+                <h3 className="font-bold text-lg mb-3">{cardItem.title}</h3>
+                <p className="text-[15px] leading-relaxed mb-3">
+                  <span className="font-semibold text-[var(--color-primary-dark)]">
+                    {t.resources.doLabel}
+                  </span>
+                  {cardItem.todo}
+                </p>
+                <p className="text-[15px] text-[var(--color-muted)] leading-relaxed">
+                  <span className="font-semibold text-[var(--color-heading)]">
+                    {t.resources.lawLabel}
+                  </span>
+                  {cardItem.law}
+                </p>
+              </div>
+            );
+          })}
         </div>
 
         <h3 className="font-bold text-xl mb-5">{t.resources.contactHeading}</h3>
@@ -202,8 +212,10 @@ export default async function LandingPage() {
           <h2 className="text-2xl sm:text-3xl font-bold mb-6 !text-white">{t.promise.heading}</h2>
           <ul className="grid sm:grid-cols-2 gap-4 text-[15px] sm:text-base">
             {t.promise.items.map((item) => (
-              <li key={item} className="flex gap-3">
-                <span className="shrink-0 w-6 h-6 rounded-full bg-white/15 flex items-center justify-center text-sm">✓</span>
+              <li key={item} className="flex gap-3 items-start">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-white/15 flex items-center justify-center mt-0.5">
+                  <CheckIcon width={13} height={13} />
+                </span>
                 {item}
               </li>
             ))}
@@ -226,9 +238,10 @@ export default async function LandingPage() {
           <p className="text-[var(--color-muted)] mb-5">{t.contact.text}</p>
           <a
             href="mailto:team@digitaldhaal.org"
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-primary-soft)] border border-[var(--color-primary)]/20 px-5 py-3 font-semibold text-[var(--color-primary-dark)] hover:bg-[var(--color-primary)]/10 transition-colors"
+            className="inline-flex items-center gap-2.5 rounded-xl bg-[var(--color-primary-soft)] border border-[var(--color-primary)]/20 px-5 py-3 font-semibold text-[var(--color-primary-dark)] hover:bg-[var(--color-primary)]/10 transition-colors"
           >
-            ✉️ team@digitaldhaal.org
+            <MailIcon width={18} height={18} />
+            team@digitaldhaal.org
           </a>
         </div>
       </section>

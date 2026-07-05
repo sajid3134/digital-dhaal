@@ -1,25 +1,24 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { getLang, STRINGS } from "../../lib/i18n.js";
 import SupportSection from "../../components/SupportSection.jsx";
 
-export const metadata = { title: "সাপোর্ট করুন — Digital Dhaal" };
+export const metadata = { title: "Support — Digital Dhaal" };
 
-export default function SupportPage() {
+export default async function SupportPage() {
+  const lang = getLang(await cookies());
+  const t = STRINGS[lang];
+
   return (
     <main className="min-h-dvh py-10 px-5">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-2xl mx-auto">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-sm text-[var(--color-muted)] hover:text-[var(--color-text)] mb-6"
+          className="inline-flex items-center gap-2 text-sm text-[var(--color-muted)] hover:text-[var(--color-text)] mb-6 transition-colors"
         >
-          ← হোমে ফিরুন
+          ← Digital Dhaal
         </Link>
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">আমাদের সাপোর্ট করুন</h1>
-        <p className="text-[var(--color-muted)] mb-8 leading-relaxed">
-          Digital Dhaal একটি স্বেচ্ছাসেবী উদ্যোগ — সাইবার বিপদে পড়া মানুষদের
-          বিনামূল্যে সাহায্য করাই আমাদের লক্ষ্য। আপনার এক কাপ কফি বা একটা আন্তরিক
-          রিভিউ আমাদের অনেকদূর নিয়ে যায়।
-        </p>
-        <SupportSection />
+        <SupportSection t={t} />
       </div>
     </main>
   );

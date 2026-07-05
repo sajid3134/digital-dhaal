@@ -72,7 +72,7 @@ export async function POST(request) {
   const caseRow = getOrCreateCase(sessionId, user.id);
   const conversation = [
     ...caseRow.conversation,
-    { role: "user", content: userText },
+    { role: "user", content: userText, at: new Date().toISOString() },
   ];
 
   function reply(payload, status = 200) {
@@ -86,7 +86,8 @@ export async function POST(request) {
     rawReply = await sendTurn(PROVIDER, {
       model: MODEL,
       systemPrompt,
-      conversation,
+      // The model only ever sees role + content — timestamps stay local.
+      conversation: conversation.map(({ role, content }) => ({ role, content })),
     });
   } catch (err) {
     console.error("[chat] provider error after retries:", err.message);
@@ -100,7 +101,11 @@ export async function POST(request) {
     return reply({ failed: true, status: caseRow.status }, 502);
   }
 
-  conversation.push({ role: "assistant", content: rawReply });
+  conversation.push({
+    role: "assistant",
+    content: rawReply,
+    at: new Date().toISOString(),
+  });
   appendTurn(sessionId, conversation, parsed);
 
   return reply({ reply_to_user: parsed.reply_to_user, status: parsed.status });

@@ -20,7 +20,17 @@ function renderAgentTurn(raw) {
   }
 }
 
-export default function CaseDetail({ caseData }) {
+const EVENT_LABELS = {
+  created: "Case created",
+  submitted: "Intake completed — entered engineer queue",
+  verifying: "Identity verification started",
+  contacted: "Victim contacted",
+  in_progress: "Resolution in progress",
+  resolved: "Marked resolved",
+  closed: "Case closed",
+};
+
+export default function CaseDetail({ caseData, events = [] }) {
   const { caseCard, conversation, flags, pillar, status, severity, user } = caseData;
   const [caseStatus, setCaseStatus] = useState(caseData.caseStatus);
   const [notes, setNotes] = useState(caseData.engineerNotes);
@@ -130,6 +140,24 @@ export default function CaseDetail({ caseData }) {
           className="w-full rounded-xl border border-black/10 px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)] resize-y"
         />
       </div>
+
+      {/* Case timeline — every status change with its timestamp */}
+      {events.length > 0 && (
+        <div className="dd-card p-4">
+          <h2 className="font-semibold text-sm mb-3">Case timeline</h2>
+          <ol className="space-y-2">
+            {events.map((e, i) => (
+              <li key={i} className="flex items-baseline gap-3 text-sm">
+                <span className="shrink-0 w-2 h-2 rounded-full bg-[var(--color-primary)] translate-y-[-1px]" />
+                <span className="font-medium">{EVENT_LABELS[e.type] ?? e.type}</span>
+                <span className="text-xs text-gray-400 ml-auto whitespace-nowrap">
+                  {new Date(e.at).toLocaleString()}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
 
       {caseCard && (
         <div className="dd-card p-4 space-y-2 text-sm">

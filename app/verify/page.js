@@ -2,14 +2,19 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUserFromCookieStore } from "../../lib/auth.js";
+import { getLang, STRINGS } from "../../lib/i18n.js";
 import VerifyPhone from "../../components/VerifyPhone.jsx";
 
-export const metadata = { title: "নম্বর যাচাই — Digital Dhaal" };
+export const metadata = { title: "Verify — Digital Dhaal" };
 
 export default async function VerifyPage() {
-  const user = getUserFromCookieStore(await cookies());
+  const cookieStore = await cookies();
+  const user = getUserFromCookieStore(cookieStore);
   if (!user) redirect("/login");
   if (user.phoneVerified) redirect("/chat");
+
+  const lang = getLang(cookieStore);
+  const t = STRINGS[lang].verify;
 
   return (
     <main className="min-h-dvh flex flex-col items-center justify-center p-6">
@@ -19,7 +24,7 @@ export default async function VerifyPage() {
         </div>
         <span className="font-bold text-lg">Digital Dhaal</span>
       </Link>
-      <VerifyPhone userName={user.name.split(" ")[0]} />
+      <VerifyPhone userName={user.name.split(" ")[0]} t={t} />
     </main>
   );
 }

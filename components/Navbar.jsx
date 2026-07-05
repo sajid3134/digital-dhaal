@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import LanguageToggle from "./LanguageToggle.jsx";
+import { MenuIcon, XIcon } from "./Icons.jsx";
 
 export default function Navbar({ lang, nav, loggedIn }) {
   const [open, setOpen] = useState(false);
@@ -47,10 +48,10 @@ export default function Navbar({ lang, nav, loggedIn }) {
           </Link>
           <button
             onClick={() => setOpen(!open)}
-            className="lg:hidden w-9 h-9 rounded-lg border border-black/10 flex items-center justify-center text-lg"
+            className="lg:hidden w-9 h-9 rounded-lg border border-black/10 flex items-center justify-center"
             aria-label="Menu"
           >
-            {open ? "✕" : "☰"}
+            {open ? <XIcon width={17} height={17} /> : <MenuIcon width={17} height={17} />}
           </button>
         </div>
       </div>

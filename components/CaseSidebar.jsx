@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { PlusIcon, XIcon } from "./Icons.jsx";
 
 const STATUS_DOT = {
   collecting: "bg-amber-400",
@@ -10,9 +11,10 @@ const STATUS_DOT = {
   out_of_scope: "bg-gray-400",
 };
 
-export default function CaseSidebar({ cases, activeCaseId, mobileOpen, onClose }) {
+export default function CaseSidebar({ cases, activeCaseId, mobileOpen, onClose, t, lang }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const locale = lang === "bn" ? "bn-BD" : "en-GB";
 
   async function selectCase(caseId) {
     if (busy || caseId === activeCaseId) return onClose?.();
@@ -42,45 +44,44 @@ export default function CaseSidebar({ cases, activeCaseId, mobileOpen, onClose }
         <button
           onClick={newCase}
           disabled={busy}
-          className="w-full rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white py-2.5 text-sm font-semibold transition-colors disabled:opacity-50"
+          className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white py-2.5 text-sm font-semibold transition-colors disabled:opacity-50"
         >
-          + নতুন সমস্যা
+          <PlusIcon width={15} height={15} />
+          {t.newProblem}
         </button>
       </div>
 
       <p className="px-5 pb-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">
-        আপনার কেস হিস্টোরি
+        {t.historyTitle}
       </p>
 
       <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-1">
         {cases.length === 0 ? (
-          <p className="px-2 text-sm text-[var(--color-muted)]">
-            এখনো কোনো কেস নেই — চ্যাটে লিখলেই শুরু হবে।
-          </p>
+          <p className="px-2 text-sm text-[var(--color-muted)]">{t.noCases}</p>
         ) : (
-          cases.map((c) => (
+          cases.map((caseItem) => (
             <button
-              key={c.id}
-              onClick={() => selectCase(c.id)}
+              key={caseItem.id}
+              onClick={() => selectCase(caseItem.id)}
               disabled={busy}
               className={`w-full text-left rounded-xl px-3 py-2.5 transition-colors ${
-                c.id === activeCaseId
+                caseItem.id === activeCaseId
                   ? "bg-[var(--color-primary-soft)] border border-[var(--color-primary)]/25"
                   : "hover:bg-black/[0.04] border border-transparent"
               }`}
             >
-              <p className="text-sm font-medium truncate leading-snug">{c.title}</p>
+              <p className="text-sm font-medium truncate leading-snug">{caseItem.title}</p>
               <p className="text-xs text-[var(--color-muted)] mt-0.5 flex items-center gap-1.5">
                 <span
                   className={`w-1.5 h-1.5 rounded-full inline-block ${
-                    STATUS_DOT[c.status] ?? "bg-gray-300"
+                    STATUS_DOT[caseItem.status] ?? "bg-gray-300"
                   }`}
                 />
-                {new Date(c.updatedAt).toLocaleDateString("bn-BD", {
+                {new Date(caseItem.updatedAt).toLocaleDateString(locale, {
                   day: "numeric",
                   month: "short",
                 })}
-                {c.status === "complete" && " · জমা হয়েছে"}
+                {caseItem.status === "complete" && ` · ${t.submittedTag}`}
               </p>
             </button>
           ))
@@ -104,10 +105,10 @@ export default function CaseSidebar({ cases, activeCaseId, mobileOpen, onClose }
             <div className="flex justify-end p-2">
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-lg hover:bg-black/5 text-lg"
+                className="w-8 h-8 rounded-lg hover:bg-black/5 flex items-center justify-center"
                 aria-label="Close"
               >
-                ✕
+                <XIcon width={16} height={16} />
               </button>
             </div>
             {body}
