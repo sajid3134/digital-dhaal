@@ -36,7 +36,8 @@ export default function AuthForm({ googleEnabled }) {
         setError(data.error || "কিছু একটা সমস্যা হয়েছে — আবার চেষ্টা করুন।");
         return;
       }
-      router.push(next);
+      // New accounts verify their phone number first; returning users go straight in.
+      router.push(mode === "register" ? "/verify" : next);
       router.refresh();
     } catch {
       setError("সংযোগে সমস্যা হয়েছে — আবার চেষ্টা করুন।");

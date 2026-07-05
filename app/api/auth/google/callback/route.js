@@ -66,7 +66,9 @@ export async function GET(request) {
   }
 
   const token = startSession(user.id);
-  const response = NextResponse.redirect(new URL("/chat", request.url));
+  // First-time / unverified Google users verify their phone before chatting.
+  const destination = user.phoneVerified ? "/chat" : "/verify";
+  const response = NextResponse.redirect(new URL(destination, request.url));
   setAuthCookie(response, token);
   response.cookies.set("dd_oauth_state", "", { path: "/", maxAge: 0 });
   return response;

@@ -1,19 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --color-bg: #f6f8fa;
+  --color-bg: #f8fafc;
   --color-surface: #ffffff;
-  --color-primary: #0f766e;
-  --color-primary-dark: #0b5750;
+  --color-primary: #0d9488;
+  --color-primary-dark: #0f766e;
+  --color-primary-soft: #f0fdfa;
   --color-accent: #f59e0b;
-  --color-text: #1f2937;
-  --color-muted: #6b7280;
-  --color-bubble-agent: #eef2f7;
-  --color-bubble-user: #0f766e;
+  --color-text: #1e293b;
+  --color-heading: #0f172a;
+  --color-muted: #64748b;
+  --color-bubble-agent: #f1f5f9;
+  --color-bubble-user: #0d9488;
   --color-critical: #dc2626;
   --color-high: #d97706;
   --color-standard: #16a34a;
   --color-star: #f59e0b;
+}
+
+/* Slightly larger base type across the whole app — readable, less cramped */
+html {
+  font-size: 17px;
 }
 
 body {
@@ -22,19 +29,38 @@ body {
   font-family: var(--font-hind-siliguri), system-ui, sans-serif;
 }
 
+h1, h2, h3 {
+  color: var(--color-heading);
+  letter-spacing: -0.01em;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+/* Sticky navbar shouldn't cover anchored sections */
+section[id] {
+  scroll-margin-top: 5rem;
+}
+
 /* Entrance animation for chat bubbles and cards */
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-up {
   animation: fadeUp 0.25s ease-out both;
+}
+
+/* Slow floating blobs behind the hero */
+@keyframes floatBlob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(14px, -18px) scale(1.06); }
+}
+.animate-blob {
+  animation: floatBlob 9s ease-in-out infinite;
+}
+.animate-blob-slow {
+  animation: floatBlob 13s ease-in-out infinite reverse;
 }
 
 /* Typing indicator dots */
@@ -56,7 +82,17 @@ body {
 /* Soft card used across landing / support / admin */
 .dd-card {
   background: var(--color-surface);
-  border: 1px solid rgb(0 0 0 / 0.06);
+  border: 1px solid rgb(15 23 42 / 0.06);
   border-radius: 1.25rem;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.04), 0 8px 24px -12px rgb(15 118 110 / 0.12);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.03), 0 10px 30px -18px rgb(13 148 136 / 0.18);
+}
+
+/* Lift on hover — used on interactive cards */
+.hover-lift {
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  border-color: rgb(13 148 136 / 0.25);
+  box-shadow: 0 4px 8px rgb(15 23 42 / 0.04), 0 18px 44px -16px rgb(13 148 136 / 0.28);
 }

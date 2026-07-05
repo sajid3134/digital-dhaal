@@ -1,10 +1,11 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getUserFromCookieStore } from "../../lib/auth.js";
-import { getCaseById } from "../../lib/db.js";
+import { getCaseById, listCasesForUser } from "../../lib/db.js";
 import ChatWindow from "../../components/ChatWindow.jsx";
 
 export const metadata = { title: "চ্যাট — Digital Dhaal" };
+export const dynamic = "force-dynamic";
 
 // Extract only what the victim-facing client may see from stored history:
 // their own messages plus the agent's reply_to_user. Internal JSON stays server-side.
@@ -30,9 +31,12 @@ export default async function ChatPage() {
   const user = getUserFromCookieStore(cookieStore);
   if (!user) redirect("/login?next=/chat");
 
+  const cases = listCasesForUser(user.id);
+
   const sessionId = cookieStore.get("dd_session")?.value;
   let initialMessages = [];
   let initialStatus = "collecting";
+  let activeCaseId = null;
 
   if (sessionId) {
     const caseRow = getCaseById(sessionId);
@@ -40,15 +44,19 @@ export default async function ChatPage() {
     if (caseRow && (!caseRow.userId || caseRow.userId === user.id)) {
       initialMessages = sanitizeHistory(caseRow.conversation);
       initialStatus = caseRow.status;
+      activeCaseId = caseRow.id;
     }
   }
 
   return (
     <ChatWindow
+      key={activeCaseId ?? "new"}
       userName={user.name}
       phoneVerified={user.phoneVerified}
       initialMessages={initialMessages}
       initialStatus={initialStatus}
+      cases={cases}
+      activeCaseId={activeCaseId}
     />
   );
 }

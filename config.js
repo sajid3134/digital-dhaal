@@ -8,7 +8,10 @@ export const PROVIDERS = {
     apiKeyEnv: "ANTHROPIC_API_KEY",
   },
   gemini: {
-    model: "gemini-flash-latest",
+    // Not "gemini-flash-latest": that resolves to the newest flash, whose
+    // free tier allows only ~20 requests/day. 2.5-flash has a much higher
+    // free daily quota — better fit for multi-turn intake conversations.
+    model: "gemini-2.5-flash",
     apiKeyEnv: "GEMINI_API_KEY",
   },
 };
