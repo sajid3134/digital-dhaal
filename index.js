@@ -15,7 +15,7 @@ const { model: MODEL, apiKeyEnv: API_KEY_ENV } = PROVIDERS[PROVIDER];
 const PROMPT_FILE = "./digital-dhaal-intake-agent-prompt.md";
 
 // The .md file has an explanatory note above a "---" line, then the actual
-// system prompt below it. We only want to send the real prompt to Claude.
+// system prompt below it. We only want to send the real prompt to the model.
 function loadSystemPrompt(path) {
   const fileText = fs.readFileSync(path, "utf-8");
   const separator = "\n---\n";
