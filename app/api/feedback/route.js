@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
-import { addFeedback, SUPPORT_TYPES } from "../../../lib/db.js";
+import { addFeedback, SUPPORT_TYPES, TIER_AMOUNTS } from "../../../lib/db.js";
 import { getUserFromRequest } from "../../../lib/auth.js";
 import { rateLimit, getClientIp } from "../../../lib/ratelimit.js";
 import { isSameOrigin, jsonError, cleanString } from "../../../lib/security.js";
+
+// bKash transaction IDs are short uppercase alphanumeric codes.
+const TRX_ID_PATTERN = /^[A-Z0-9]{8,12}$/;
 
 export async function POST(request) {
   if (!isSameOrigin(request)) return jsonError("Forbidden", 403);
@@ -22,8 +25,18 @@ export async function POST(request) {
   }
   if (review.length < 5) return jsonError("Review is required", 400);
 
-  const user = getUserFromRequest(request);
-  addFeedback({ userId: user?.id ?? null, supportType, rating, review });
+  // TrxID only makes sense on paid tiers; validated but always optional —
+  // a review without payment is perfectly fine.
+  let trxId = null;
+  if (TIER_AMOUNTS[supportType] > 0 && typeof body.trxId === "string" && body.trxId.trim()) {
+    trxId = body.trxId.trim().toUpperCase();
+    if (!TRX_ID_PATTERN.test(trxId)) {
+      return jsonError("TrxID format looks wrong — copy it exactly from the bKash SMS.", 400);
+    }
+  }
 
-  return NextResponse.json({ ok: true });
+  const user = getUserFromRequest(request);
+  addFeedback({ userId: user?.id ?? null, supportType, rating, review, trxId });
+
+  return NextResponse.json({ ok: true, claimed: !!trxId });
 }

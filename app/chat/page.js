@@ -72,6 +72,7 @@ export default async function ChatPage() {
       caseStatus={caseStatus}
       lang={lang}
       t={t}
+      bkashNumber={process.env.BKASH_NUMBER || null}
     />
   );
 }

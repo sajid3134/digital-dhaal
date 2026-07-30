@@ -18,7 +18,7 @@ export default async function SupportPage() {
         >
           ← Digital Dhaal
         </Link>
-        <SupportSection t={t} />
+        <SupportSection t={t} bkashNumber={process.env.BKASH_NUMBER || null} />
       </div>
     </main>
   );

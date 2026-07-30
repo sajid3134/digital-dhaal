@@ -25,6 +25,7 @@ export default function ChatWindow({
   caseStatus = "new",
   lang = "bn",
   t,
+  bkashNumber = null,
 }) {
   const router = useRouter();
   const [messages, setMessages] = useState(
@@ -268,7 +269,7 @@ export default function ChatWindow({
                   />
                 )}
 
-                <SupportSection t={t} compact />
+                <SupportSection t={t} bkashNumber={bkashNumber} compact />
               </div>
             )}
 
