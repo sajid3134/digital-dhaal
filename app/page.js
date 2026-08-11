@@ -4,6 +4,8 @@ import { getUserFromCookieStore } from "../lib/auth.js";
 import { getLang, STRINGS } from "../lib/i18n.js";
 import Navbar from "../components/Navbar.jsx";
 import SiteFooter from "../components/SiteFooter.jsx";
+import TrustBand from "../components/TrustBand.jsx";
+import { DhaalIcon } from "../components/Brand.jsx";
 import { ICONS, CheckIcon, MailIcon, LockIcon } from "../components/Icons.jsx";
 
 export default async function LandingPage() {
@@ -14,7 +16,7 @@ export default async function LandingPage() {
 
   return (
     <main className="min-h-dvh">
-      <Navbar lang={lang} nav={t.nav} loggedIn={!!user} />
+      <Navbar lang={lang} nav={t.nav} loggedIn={!!user} secureLabel={t.security.chipEncrypted} />
 
       {/* ---------- Hero ---------- */}
       <section className="relative overflow-hidden">
@@ -59,15 +61,16 @@ export default async function LandingPage() {
           <div className="hidden lg:block">
             <div className="dd-card p-5 max-w-md ml-auto rotate-1 hover:rotate-0 transition-transform duration-300">
               <div className="flex items-center gap-3 pb-4 border-b border-black/5 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-sm">
-                  ঢাল
-                </div>
+                <DhaalIcon size={38} />
                 <div>
                   <p className="font-semibold leading-tight">Digital Dhaal</p>
                   <p className="text-xs text-green-600 leading-tight flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" /> online
                   </p>
                 </div>
+                <span className="dd-chip dd-chip-secure ml-auto">
+                  {t.security.chipEncrypted}
+                </span>
               </div>
               <div className="space-y-3">
                 <div className="flex justify-end">
@@ -222,6 +225,9 @@ export default async function LandingPage() {
           </ul>
         </div>
       </section>
+
+      {/* ---------- Security / trust band (the calm cyber register) ---------- */}
+      <TrustBand s={t.security} />
 
       {/* ---------- About ---------- */}
       <section id="about" className="bg-white border-y border-black/5 py-20">

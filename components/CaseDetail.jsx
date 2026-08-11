@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { FileIcon } from "./Icons.jsx";
 
 const WORKFLOW_OPTIONS = [
   ["new", "New"],
@@ -23,6 +24,7 @@ function renderAgentTurn(raw) {
 const EVENT_LABELS = {
   created: "Case created",
   submitted: "Intake completed — entered engineer queue",
+  breach_checked: "Data-breach check performed",
   verifying: "Identity verification started",
   contacted: "Victim contacted",
   in_progress: "Resolution in progress",
@@ -31,7 +33,7 @@ const EVENT_LABELS = {
 };
 
 export default function CaseDetail({ caseData, events = [] }) {
-  const { caseCard, conversation, flags, pillar, status, severity, user } = caseData;
+  const { caseCard, conversation, flags, pillar, status, severity, user, breachCheck } = caseData;
   const [caseStatus, setCaseStatus] = useState(caseData.caseStatus);
   const [notes, setNotes] = useState(caseData.engineerNotes);
   const [saving, setSaving] = useState(false);
@@ -63,9 +65,18 @@ export default function CaseDetail({ caseData, events = [] }) {
 
   return (
     <div className="space-y-5">
-      <Link href="/admin" className="text-sm text-[var(--color-primary)] hover:underline">
-        ← Back to case queue
-      </Link>
+      <div className="flex items-center justify-between gap-3">
+        <Link href="/admin" className="text-sm text-[var(--color-primary)] hover:underline">
+          ← Back to case queue
+        </Link>
+        <Link
+          href={`/admin/${caseData.id}/report`}
+          className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-primary)]/30 bg-[var(--color-primary-soft)] text-[var(--color-primary-dark)] px-4 py-2 text-sm font-semibold hover:bg-[var(--color-primary)]/10 transition-colors"
+        >
+          <FileIcon width={15} height={15} />
+          Download incident report
+        </Link>
+      </div>
 
       <div>
         <h1 className="text-xl font-bold">Case {caseData.id.slice(0, 8)}</h1>
@@ -102,11 +113,52 @@ export default function CaseDetail({ caseData, events = [] }) {
                 <span className="text-amber-600">(unverified)</span>
               )}
             </p>
+            <p>
+              <span className="text-gray-500">Identity (KYC):</span>{" "}
+              {user.kycStatus === "verified" ? (
+                <span className="text-green-600 font-semibold">✓ verified (demo)</span>
+              ) : (
+                <span className="text-gray-400">not completed</span>
+              )}
+            </p>
           </div>
         ) : (
           <p className="text-gray-400">No account linked (legacy case)</p>
         )}
       </div>
+
+      {/* Data-breach check result (run by the victim during intake) */}
+      {breachCheck && (
+        <div className="dd-card p-4 text-sm">
+          <h2 className="font-semibold mb-2">Data-breach check</h2>
+          <p className="text-gray-600">
+            Checked <span className="font-mono">{breachCheck.query}</span>{" "}
+            <span className="text-gray-400 text-xs">· {breachCheck.source}</span>
+          </p>
+          {breachCheck.status === "found" ? (
+            <div className="mt-2">
+              <p className="text-amber-700 font-semibold">
+                Exposed in {breachCheck.breaches.length} breach
+                {breachCheck.breaches.length === 1 ? "" : "es"}:
+              </p>
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                {breachCheck.breaches.map((b) => (
+                  <span
+                    key={b}
+                    className="font-mono text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded px-1.5 py-0.5"
+                  >
+                    {b}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : breachCheck.status === "clean" ? (
+            <p className="text-green-600 mt-2 font-medium">No exposure found in known breaches.</p>
+          ) : (
+            <p className="text-gray-500 mt-2">Phone identifiers not covered by the breach source.</p>
+          )}
+        </div>
+      )}
 
       {/* Engineer workflow */}
       <div className="dd-card p-4 space-y-3">

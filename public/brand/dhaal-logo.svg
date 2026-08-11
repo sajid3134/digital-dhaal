@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="220" viewBox="0 0 200 220" role="img" aria-label="Digital Dhaal logo">
+  <defs>
+    <linearGradient id="dhaalShield" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#12A99B"/>
+      <stop offset="1" stop-color="#0B5750"/>
+    </linearGradient>
+  </defs>
+  <path d="M100 16 L174 44 L174 116 C174 170 140 198 100 214 C60 198 26 170 26 116 L26 44 Z" fill="url(#dhaalShield)"/>
+  <path d="M100 26 L165 51 L165 115 C165 162 135 187 100 202 C65 187 35 162 35 115 L35 51 Z" fill="none" stroke="#ffffff" stroke-opacity=".2" stroke-width="2"/>
+  <g stroke="#6EE0D2" stroke-width="2.6" stroke-linecap="round" opacity=".9">
+    <line x1="68" y1="112" x2="47" y2="133"/>
+    <line x1="135" y1="84" x2="157" y2="64"/>
+    <line x1="91" y1="136" x2="100" y2="170"/>
+  </g>
+  <g fill="#6EE0D2">
+    <circle cx="45" cy="135" r="4"/>
+    <circle cx="159" cy="62" r="4"/>
+    <circle cx="100" cy="172" r="4"/>
+  </g>
+  <path d="M68 112 L91 136 L135 84" fill="none" stroke="#ffffff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

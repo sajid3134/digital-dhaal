@@ -5,8 +5,10 @@ const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
+    // Camera is allowed for same-origin only — the KYC identity-check demo
+    // captures a selfie via getUserMedia. Everything else stays disabled.
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), payment=()",
+    value: "camera=(self), microphone=(), geolocation=(), payment=()",
   },
 ];
 

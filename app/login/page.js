@@ -6,6 +6,8 @@ import { getUserFromCookieStore } from "../../lib/auth.js";
 import { getLang, STRINGS } from "../../lib/i18n.js";
 import AuthForm from "../../components/AuthForm.jsx";
 import LanguageToggle from "../../components/LanguageToggle.jsx";
+import { DhaalMark } from "../../components/Brand.jsx";
+import { LockIcon } from "../../components/Icons.jsx";
 
 export const metadata = { title: "Login — Digital Dhaal" };
 
@@ -16,24 +18,39 @@ export default async function LoginPage() {
 
   const lang = getLang(cookieStore);
   const t = STRINGS[lang].auth;
+  const sec = STRINGS[lang].security;
 
   return (
     <main className="min-h-dvh flex">
       {/* Brand panel (desktop only) */}
-      <div className="hidden lg:flex flex-col justify-between w-[45%] bg-gradient-to-br from-[var(--color-primary-dark)] to-[var(--color-primary)] text-white p-12">
+      <div className="hidden lg:flex flex-col justify-between w-[45%] bg-gradient-to-br from-[var(--color-ink)] to-[var(--color-primary-dark)] dd-cyber-grid text-white p-12">
         <Link href="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center font-bold">ঢাল</div>
+          <DhaalMark size={40} />
           <span className="text-lg font-semibold">Digital Dhaal</span>
         </Link>
         <div>
+          <div className="inline-flex items-center gap-2 mb-5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-cyber)] secure-dot" />
+            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-cyber)]">
+              {sec.kicker}
+            </span>
+          </div>
           <h1 className="text-3xl font-bold leading-snug mb-4 !text-white">
             {t.sideTitle1}
             <br />
             {t.sideTitle2}
           </h1>
-          <p className="text-white/80 leading-relaxed max-w-sm">{t.sideText}</p>
+          <p className="text-white/75 leading-relaxed max-w-sm">{t.sideText}</p>
+          <div className="flex flex-wrap gap-2 mt-6">
+            <span className="dd-chip dd-chip-dark">{sec.chipEncrypted}</span>
+            <span className="dd-chip dd-chip-dark">{sec.chipConfidential}</span>
+            <span className="dd-chip dd-chip-dark">{sec.chipVerified}</span>
+          </div>
         </div>
-        <p className="text-white/50 text-sm">{t.sideFoot}</p>
+        <p className="text-white/50 text-sm flex items-center gap-2">
+          <LockIcon width={14} height={14} className="text-[var(--color-cyber)]" />
+          {t.sideFoot}
+        </p>
       </div>
 
       {/* Form panel */}
@@ -42,7 +59,7 @@ export default async function LoginPage() {
           <LanguageToggle lang={lang} />
         </div>
         <Link href="/" className="lg:hidden flex items-center gap-2 mb-8">
-          <div className="w-9 h-9 rounded-xl bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-sm">ঢাল</div>
+          <DhaalMark size={36} />
           <span className="font-semibold">Digital Dhaal</span>
         </Link>
         <h2 className="text-xl font-bold mb-1">{t.welcome}</h2>

@@ -45,6 +45,7 @@ export default async function ChatPage() {
   let activeCaseId = null;
   let caseEvents = [];
   let caseStatus = "new";
+  let breachCheck = null;
 
   if (sessionId) {
     const caseRow = getCaseById(sessionId);
@@ -54,6 +55,7 @@ export default async function ChatPage() {
       initialStatus = caseRow.status;
       activeCaseId = caseRow.id;
       caseStatus = caseRow.caseStatus;
+      breachCheck = caseRow.breachCheck;
       // Safe subset for the victim: event types + timestamps only.
       caseEvents = listCaseEvents(caseRow.id);
     }
@@ -70,6 +72,8 @@ export default async function ChatPage() {
       activeCaseId={activeCaseId}
       caseEvents={caseEvents}
       caseStatus={caseStatus}
+      kycStatus={user.kycStatus}
+      breachCheck={breachCheck}
       lang={lang}
       t={t}
       bkashNumber={process.env.BKASH_NUMBER || null}

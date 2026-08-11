@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getUserFromCookieStore } from "../../lib/auth.js";
 import { getLang, STRINGS } from "../../lib/i18n.js";
 import VerifyPhone from "../../components/VerifyPhone.jsx";
+import { DhaalMark } from "../../components/Brand.jsx";
 
 export const metadata = { title: "Verify — Digital Dhaal" };
 
@@ -19,9 +20,7 @@ export default async function VerifyPage() {
   return (
     <main className="min-h-dvh flex flex-col items-center justify-center p-6">
       <Link href="/" className="flex items-center gap-2.5 mb-8">
-        <div className="w-9 h-9 rounded-xl bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-sm">
-          ঢাল
-        </div>
+        <DhaalMark size={36} />
         <span className="font-bold text-lg">Digital Dhaal</span>
       </Link>
       <VerifyPhone userName={user.name.split(" ")[0]} t={t} />

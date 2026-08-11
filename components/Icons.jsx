@@ -134,6 +134,119 @@ export const PlusIcon = (p) => (
   </svg>
 );
 
+export const LockKeyholeIcon = (p) => (
+  <svg {...base} {...p}>
+    <rect x="3" y="11" width="18" height="11" rx="2" />
+    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    <circle cx="12" cy="16" r="1" />
+    <path d="M12 17v2" />
+  </svg>
+);
+
+export const KeyIcon = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="7.5" cy="15.5" r="4.5" />
+    <path d="m10.7 12.3 8.3-8.3M16 6l3 3M14 8l2 2" />
+  </svg>
+);
+
+export const FingerprintIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M12 10a2 2 0 0 0-2 2c0 1.5.5 3 .5 3" />
+    <path d="M8.5 8.5a5 5 0 0 1 7 1.5c.5 1 .5 3 .5 4" />
+    <path d="M5.5 11a8 8 0 0 1 4-6.5" />
+    <path d="M14 4.5A8 8 0 0 1 18.5 11c0 2 0 4-.5 5.5" />
+    <path d="M12 12c0 3 .5 5 1 6.5" />
+    <path d="M8 14c.3 2 .8 3.5 1.5 5" />
+  </svg>
+);
+
+export const ServerIcon = (p) => (
+  <svg {...base} {...p}>
+    <rect x="3" y="4" width="18" height="7" rx="2" />
+    <rect x="3" y="13" width="18" height="7" rx="2" />
+    <path d="M7 7.5h.01M7 16.5h.01" />
+  </svg>
+);
+
+export const EyeIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
+export const EyeOffIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 10 8 10 8a13.2 13.2 0 0 1-1.67 2.68" />
+    <path d="M6.6 6.6A13.3 13.3 0 0 0 2 12s3 8 10 8a9.1 9.1 0 0 0 5.4-1.6" />
+    <path d="M14.1 14.1a3 3 0 0 1-4.2-4.2M2 2l20 20" />
+  </svg>
+);
+
+export const BadgeCheckIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" />
+    <path d="m9 12 2 2 4-4" />
+  </svg>
+);
+
+export const GlobeIcon = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M2 12h20M12 2a15.3 15.3 0 0 1 0 20 15.3 15.3 0 0 1 0-20" />
+  </svg>
+);
+
+export const CameraIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+    <circle cx="12" cy="13" r="3.5" />
+  </svg>
+);
+
+export const UploadIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <path d="M17 8l-5-5-5 5M12 3v12" />
+  </svg>
+);
+
+export const DownloadIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <path d="M7 10l5 5 5-5M12 15V3" />
+  </svg>
+);
+
+export const SearchIcon = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="11" cy="11" r="8" />
+    <path d="m21 21-4.3-4.3" />
+  </svg>
+);
+
+export const IdCardIcon = (p) => (
+  <svg {...base} {...p}>
+    <rect x="2" y="5" width="20" height="14" rx="2" />
+    <circle cx="8" cy="11" r="2" />
+    <path d="M5 16a3 3 0 0 1 6 0M14 9h4M14 12.5h4M14 16h2.5" />
+  </svg>
+);
+
+export const ScanFaceIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" />
+    <path d="M9 9h.01M15 9h.01M9.5 14.5a3.5 3.5 0 0 0 5 0" />
+  </svg>
+);
+
+export const RefreshIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5" />
+  </svg>
+);
+
 export const GoogleIcon = ({ size = 18, ...p }) => (
   <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true" {...p}>
     <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.5l6.7-6.7C35.6 2.5 30.2 0 24 0 14.6 0 6.5 5.4 2.5 13.2l7.8 6.1C12.2 13.2 17.6 9.5 24 9.5z" />

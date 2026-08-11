@@ -2,11 +2,23 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import PhoneVerify from "./PhoneVerify.jsx";
 import SupportSection from "./SupportSection.jsx";
 import CaseSidebar from "./CaseSidebar.jsx";
 import CaseProgress from "./CaseProgress.jsx";
-import { SendIcon, MenuIcon, CheckCircleIcon, PlusIcon } from "./Icons.jsx";
+import BreachCheck from "./BreachCheck.jsx";
+import { DhaalIcon } from "./Brand.jsx";
+import {
+  SendIcon,
+  MenuIcon,
+  CheckCircleIcon,
+  PlusIcon,
+  LockIcon,
+  BadgeCheckIcon,
+  ScanFaceIcon,
+  FileIcon,
+} from "./Icons.jsx";
 
 // Must match the "Opening message" line in digital-dhaal-intake-agent-prompt.md.
 const OPENING_MESSAGE =
@@ -23,10 +35,13 @@ export default function ChatWindow({
   activeCaseId = null,
   caseEvents = [],
   caseStatus = "new",
+  kycStatus = "none",
+  breachCheck = null,
   lang = "bn",
   t,
   bkashNumber = null,
 }) {
+  const kycVerified = kycStatus === "verified";
   const router = useRouter();
   const [messages, setMessages] = useState(
     initialMessages.length > 0
@@ -117,6 +132,55 @@ export default function ChatWindow({
 
   const showTimeline =
     activeCaseId && (done || (caseStatus && caseStatus !== "new"));
+  const resolved = caseStatus === "resolved" || caseStatus === "closed";
+
+  // Per-case security tools: breach/leak check, identity verification (demo),
+  // and — once the case is resolved — the downloadable incident report.
+  const securityTools = activeCaseId ? (
+    <div className="space-y-3">
+      <BreachCheck caseId={activeCaseId} initial={breachCheck} t={t.breach} lang={lang} />
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Link
+          href="/kyc"
+          className="dd-card hover-lift p-4 flex items-center gap-3 flex-1"
+        >
+          <div className="shrink-0 w-9 h-9 rounded-xl bg-[var(--color-primary-soft)] text-[var(--color-primary-dark)] flex items-center justify-center">
+            {kycVerified ? (
+              <BadgeCheckIcon width={18} height={18} />
+            ) : (
+              <ScanFaceIcon width={18} height={18} />
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="font-semibold text-sm leading-tight">
+              {kycVerified ? t.kyc.verifiedBadge : t.kyc.title}
+            </p>
+            <p className="text-xs text-[var(--color-muted)] leading-snug mt-0.5 truncate">
+              {kycVerified ? t.kyc.resultSub : t.kyc.sub}
+            </p>
+          </div>
+        </Link>
+        {resolved && (
+          <a
+            href={`/report/${activeCaseId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="dd-card hover-lift p-4 flex items-center gap-3 flex-1"
+          >
+            <div className="shrink-0 w-9 h-9 rounded-xl bg-[var(--color-primary-soft)] text-[var(--color-primary-dark)] flex items-center justify-center">
+              <FileIcon width={18} height={18} />
+            </div>
+            <div className="min-w-0">
+              <p className="font-semibold text-sm leading-tight">{t.report.download}</p>
+              <p className="text-xs text-[var(--color-muted)] leading-snug mt-0.5 font-mono">
+                PDF · {activeCaseId.slice(0, 8).toUpperCase()}
+              </p>
+            </div>
+          </a>
+        )}
+      </div>
+    </div>
+  ) : null;
 
   return (
     <div className="flex h-dvh bg-[var(--color-bg)]">
@@ -140,9 +204,7 @@ export default function ChatWindow({
             >
               <MenuIcon width={18} height={18} />
             </button>
-            <div className="w-9 h-9 shrink-0 rounded-xl bg-[var(--color-primary)] flex items-center justify-center text-white text-sm font-bold">
-              ঢাল
-            </div>
+            <DhaalIcon size={34} className="shrink-0" />
             <div className="min-w-0">
               <p className="font-bold leading-tight truncate">Digital Dhaal</p>
               <p className="text-xs text-[var(--color-muted)] leading-tight flex items-center gap-1">
@@ -163,6 +225,16 @@ export default function ChatWindow({
             )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <span className="dd-chip dd-chip-secure hidden md:inline-flex">
+              <LockIcon width={11} height={11} />
+              {t.security.secureSession}
+            </span>
+            {kycVerified && (
+              <span className="dd-chip dd-chip-secure hidden lg:inline-flex">
+                <BadgeCheckIcon width={11} height={11} />
+                {t.security.idVerified}
+              </span>
+            )}
             <span className="hidden sm:block text-sm text-[var(--color-muted)]">{userName}</span>
             <button
               onClick={handleLogout}
@@ -186,9 +258,7 @@ export default function ChatWindow({
                 }`}
               >
                 {m.role !== "user" && (
-                  <div className="w-7 h-7 shrink-0 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-[10px] font-bold mb-4">
-                    ঢাল
-                  </div>
+                  <DhaalIcon size={26} className="shrink-0 mb-4" />
                 )}
                 <div className={`max-w-[85%] sm:max-w-[72%] ${m.role === "user" ? "text-right" : ""}`}>
                   <div
@@ -211,9 +281,7 @@ export default function ChatWindow({
 
             {sending && (
               <div className="flex items-end gap-2 justify-start animate-fade-up">
-                <div className="w-7 h-7 shrink-0 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-[10px] font-bold">
-                  ঢাল
-                </div>
+                <DhaalIcon size={26} className="shrink-0" />
                 <div className="rounded-2xl rounded-bl-md bg-white border border-black/5 shadow-sm px-4 py-3 flex items-center gap-1.5">
                   <span className="typing-dot" />
                   <span className="typing-dot" />
@@ -269,12 +337,14 @@ export default function ChatWindow({
                   />
                 )}
 
+                {securityTools}
+
                 <SupportSection t={t} bkashNumber={bkashNumber} compact />
               </div>
             )}
 
             {!done && showTimeline && (
-              <div className="animate-fade-up pt-2">
+              <div className="animate-fade-up pt-2 space-y-4">
                 <CaseProgress
                   events={caseEvents}
                   caseStatus={caseStatus}
@@ -282,6 +352,7 @@ export default function ChatWindow({
                   title={c.progressTitle}
                   lang={lang}
                 />
+                {securityTools}
               </div>
             )}
 

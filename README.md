@@ -28,17 +28,23 @@ Every day, people in Bangladesh lose Facebook and Gmail accounts to hackers, get
 - **Live progress tracker** — a timestamped timeline (submitted → verifying → contacted → in progress → resolved) so victims always know where their case stands
 - **Bilingual UI** — full বাংলা/English toggle across the whole site
 - **Installable PWA** — works as an app from the home screen on Android/iOS, no app store needed
+- **Data-breach check** — enter the affected email to see which known breaches it appears in (via the free [XposedOrNot](https://xposedornot.com) API); the result is attached to the case for the engineer, with honest empty/error states
+- **Identity verification (prototype)** — upload a NID photo and capture a webcam selfie for a simulated "identity verified" result, clearly labelled as a demo (no real biometrics, no image ever leaves the browser)
+- **Downloadable incident report** — a formatted, official-looking case-file PDF (logo header, case ID, reporter + verification, pillar/severity, bilingual summary, breach findings, recommended actions, timeline, disclaimer) that victims can download once their case is resolved
 - **Feedback & support** — 5-star rating + review after each case, with optional "treat the team" tiers
 
 ### Engineer side (`/admin`)
 - **Severity-sorted case queue** — critical cases first, with reporter identity and phone-verification badges
 - **Full case files** — auto-generated bilingual case card (summary, urgency, recommended first action, support path), complete conversation transcript, and a timestamped event timeline
 - **Workflow management** — status transitions (new → verifying → contacted → in progress → resolved → closed) with private engineer notes
+- **Breach findings & identity status** — the victim's data-breach result and KYC (prototype) status surface on the case file and queue, and a one-click **"Download incident report"** generates the same official PDF for police/handover
 - **Dashboard stats** — open/critical/resolved counts and average user rating, plus all feedback
 
 ### Under the hood
 - Retry-with-backoff and forced-JSON model output for reliable intake turns
 - The victim-facing API only ever exposes the assistant's reply — internal case data (flags, recommended actions) never reaches the client
+- The breach lookup runs **server-side**, so the browser only ever talks to our own origin (the same-origin CSP stays intact) and the KYC demo sends only a status flag — never an image
+- The incident report is rendered by the browser and printed to PDF, which shapes Bangla correctly and needs zero PDF dependencies
 - scrypt password hashing, hashed session tokens, same-origin checks on all mutating routes, per-route rate limiting, OTP attempt/expiry limits, security headers, and a Basic-Auth-gated admin area
 
 ## How it works
