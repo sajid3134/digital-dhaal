@@ -22,9 +22,15 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  // suppressHydrationWarning: browser extensions (e.g. focus-visible polyfills)
+  // mutate <html>/<body> attributes before React hydrates. That's harmless but
+  // otherwise trips a hydration-mismatch warning on the top-level elements.
   return (
-    <html lang="bn">
-      <body className={`${hindSiliguri.variable} ${jetBrainsMono.variable} antialiased`}>
+    <html lang="bn" suppressHydrationWarning>
+      <body
+        suppressHydrationWarning
+        className={`${hindSiliguri.variable} ${jetBrainsMono.variable} antialiased`}
+      >
         <RegisterSW />
         {children}
       </body>
