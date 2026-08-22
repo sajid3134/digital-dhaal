@@ -25,6 +25,7 @@ const EVENT_LABELS = {
   created: "Case created",
   submitted: "Intake completed — entered engineer queue",
   breach_checked: "Data-breach check performed",
+  engineer_message: "Message sent to victim",
   verifying: "Identity verification started",
   contacted: "Victim contacted",
   in_progress: "Resolution in progress",
@@ -36,6 +37,8 @@ export default function CaseDetail({ caseData, events = [] }) {
   const { caseCard, conversation, flags, pillar, status, severity, user, breachCheck } = caseData;
   const [caseStatus, setCaseStatus] = useState(caseData.caseStatus);
   const [notes, setNotes] = useState(caseData.engineerNotes);
+  const [victimMsg, setVictimMsg] = useState(caseData.engineerMessage ?? "");
+  const [meetingLink, setMeetingLink] = useState(caseData.meetingLink ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
@@ -48,7 +51,12 @@ export default function CaseDetail({ caseData, events = [] }) {
       const res = await fetch(`/api/admin/cases/${caseData.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ caseStatus, engineerNotes: notes }),
+        body: JSON.stringify({
+          caseStatus,
+          engineerNotes: notes,
+          engineerMessage: victimMsg,
+          meetingLink,
+        }),
       });
       if (!res.ok) {
         setError("Save failed — try again.");
@@ -103,7 +111,12 @@ export default function CaseDetail({ caseData, events = [] }) {
         {user ? (
           <div className="grid sm:grid-cols-3 gap-2">
             <p><span className="text-gray-500">Name:</span> {user.name}</p>
-            <p><span className="text-gray-500">Email:</span> {user.email}</p>
+            <p>
+              <span className="text-gray-500">Email:</span> {user.email}{" "}
+              {user.emailVerified && (
+                <span className="text-green-600 font-semibold">✓ verified</span>
+              )}
+            </p>
             <p>
               <span className="text-gray-500">Phone:</span>{" "}
               {user.phone ?? "not provided"}{" "}
@@ -159,6 +172,48 @@ export default function CaseDetail({ caseData, events = [] }) {
           )}
         </div>
       )}
+
+      {/* Contact the victim — message + meeting link, delivered in her chat */}
+      <div className="dd-card p-4 space-y-3">
+        <div>
+          <h2 className="font-semibold text-sm">Message the victim</h2>
+          <p className="text-xs text-gray-500 mt-0.5">
+            This appears in the victim's chat as a message from her engineer. Paste a Google
+            Meet / Zoom / Teams link to invite her to a call — she gets a "Join secure call"
+            button. Delivered inside the platform; no email needed.
+          </p>
+        </div>
+        <textarea
+          value={victimMsg}
+          onChange={(e) => setVictimMsg(e.target.value)}
+          placeholder="e.g. Hi Mira, I've reviewed your case. Let's do a quick call so I can guide the recovery — join using the button below at 5pm today."
+          rows={3}
+          maxLength={2000}
+          className="w-full rounded-xl border border-black/10 px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)] resize-y"
+        />
+        <input
+          value={meetingLink}
+          onChange={(e) => setMeetingLink(e.target.value)}
+          placeholder="Meeting link (optional) — https://meet.google.com/..."
+          type="url"
+          className="w-full rounded-xl border border-black/10 px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)] font-mono"
+        />
+        <div className="flex items-center gap-3">
+          <button
+            onClick={save}
+            disabled={saving}
+            className="rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white px-5 py-2 text-sm font-semibold transition-colors disabled:opacity-50"
+          >
+            {saving ? "Sending…" : "Send to victim"}
+          </button>
+          {saved && <span className="text-green-600 text-sm">✓ Sent</span>}
+          {caseData.engineerMessageAt && !saved && (
+            <span className="text-xs text-gray-400">
+              Last sent {new Date(caseData.engineerMessageAt).toLocaleString()}
+            </span>
+          )}
+        </div>
+      </div>
 
       {/* Engineer workflow */}
       <div className="dd-card p-4 space-y-3">

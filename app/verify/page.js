@@ -12,7 +12,7 @@ export default async function VerifyPage() {
   const cookieStore = await cookies();
   const user = getUserFromCookieStore(cookieStore);
   if (!user) redirect("/login");
-  if (user.phoneVerified) redirect("/chat");
+  if (user.verified) redirect("/chat");
 
   const lang = getLang(cookieStore);
   const t = STRINGS[lang].verify;
@@ -23,7 +23,7 @@ export default async function VerifyPage() {
         <DhaalMark size={36} />
         <span className="font-bold text-lg">Digital Dhaal</span>
       </Link>
-      <VerifyPhone userName={user.name.split(" ")[0]} t={t} />
+      <VerifyPhone userName={user.name.split(" ")[0]} userEmail={user.email} t={t} />
     </main>
   );
 }

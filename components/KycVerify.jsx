@@ -11,9 +11,24 @@ import {
   RefreshIcon,
   AlertIcon,
   CheckIcon,
+  LockIcon,
 } from "./Icons.jsx";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Teal corner brackets — the "scanning frame" that guides the user and makes
+// the capture feel like a real identity check.
+function ScanCorners() {
+  const base = "absolute w-6 h-6 border-[var(--color-primary)]";
+  return (
+    <>
+      <span className={`${base} top-2 left-2 border-t-2 border-l-2 rounded-tl-md`} />
+      <span className={`${base} top-2 right-2 border-t-2 border-r-2 rounded-tr-md`} />
+      <span className={`${base} bottom-2 left-2 border-b-2 border-l-2 rounded-bl-md`} />
+      <span className={`${base} bottom-2 right-2 border-b-2 border-r-2 rounded-br-md`} />
+    </>
+  );
+}
 
 // Prototype identity check. IMPORTANT: no real biometric matching happens and
 // no image is ever uploaded — the NID photo and selfie stay in the browser as
@@ -163,6 +178,12 @@ export default function KycVerify({ t, initialStatus = "none" }) {
   /* --------------------------- capture flow --------------------------- */
   return (
     <div className="space-y-4">
+      {/* Safety reassurance — front and center, calm and trust-building */}
+      <div className="rounded-xl border border-[var(--color-primary)]/20 bg-[var(--color-primary-soft)] px-4 py-3 flex gap-3 text-sm text-[var(--color-primary-dark)]">
+        <LockIcon width={18} height={18} className="shrink-0 mt-0.5" />
+        <p className="leading-snug font-medium">{t.safeLine}</p>
+      </div>
+
       {/* Prototype disclaimer — impossible to miss */}
       <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex gap-3 text-sm text-amber-800">
         <AlertIcon width={18} height={18} className="shrink-0 mt-0.5" />
@@ -179,12 +200,21 @@ export default function KycVerify({ t, initialStatus = "none" }) {
           </div>
           <p className="text-sm text-[var(--color-muted)] mb-3">{t.step1Hint}</p>
 
-          <div className="aspect-[16/10] rounded-xl border-2 border-dashed border-black/10 bg-black/[0.02] overflow-hidden flex items-center justify-center">
+          <div className="relative aspect-[16/10] rounded-xl border-2 border-dashed border-[var(--color-primary)]/25 bg-[var(--color-primary-soft)]/40 overflow-hidden flex flex-col items-center justify-center">
             {nid ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={nid} alt="NID preview" className="w-full h-full object-cover" />
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={nid} alt="ID preview" className="w-full h-full object-cover" />
+                <ScanCorners />
+              </>
             ) : (
-              <IdCardIcon width={38} height={38} className="text-black/15" />
+              <>
+                <ScanCorners />
+                <IdCardIcon width={38} height={38} className="text-[var(--color-primary)]/40" />
+                <p className="text-[11px] text-[var(--color-primary-dark)]/70 mt-2 px-4 text-center">
+                  {t.frameLabel}
+                </p>
+              </>
             )}
           </div>
 
@@ -213,19 +243,38 @@ export default function KycVerify({ t, initialStatus = "none" }) {
           </div>
           <p className="text-sm text-[var(--color-muted)] mb-3">{t.step2Hint}</p>
 
-          <div className="aspect-[16/10] rounded-xl border-2 border-dashed border-black/10 bg-black/[0.02] overflow-hidden flex items-center justify-center relative">
+          <div className="relative aspect-[16/10] rounded-xl border-2 border-dashed border-[var(--color-primary)]/25 bg-[var(--color-primary-soft)]/40 overflow-hidden flex flex-col items-center justify-center">
             {selfie ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={selfie} alt="Selfie preview" className="w-full h-full object-cover" />
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={selfie} alt="Selfie preview" className="w-full h-full object-cover" />
+                <ScanCorners />
+              </>
             ) : cameraOn ? (
-              <video
-                ref={videoRef}
-                playsInline
-                muted
-                className="w-full h-full object-cover -scale-x-100"
-              />
+              <>
+                <video
+                  ref={videoRef}
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover -scale-x-100"
+                />
+                {/* Face guide oval + corners */}
+                <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <span className="w-[46%] h-[78%] rounded-[50%] border-2 border-white/70 shadow-[0_0_0_9999px_rgba(0,0,0,0.12)]" />
+                </span>
+                <ScanCorners />
+                <p className="absolute bottom-2 inset-x-0 text-center text-[11px] text-white font-medium drop-shadow">
+                  {t.faceFrameLabel}
+                </p>
+              </>
             ) : (
-              <ScanFaceIcon width={38} height={38} className="text-black/15" />
+              <>
+                <ScanCorners />
+                <ScanFaceIcon width={38} height={38} className="text-[var(--color-primary)]/40" />
+                <p className="text-[11px] text-[var(--color-primary-dark)]/70 mt-2 px-4 text-center">
+                  {t.faceFrameLabel}
+                </p>
+              </>
             )}
           </div>
           <canvas ref={canvasRef} className="hidden" />

@@ -29,19 +29,22 @@ export default async function LoginPage() {
           <span className="text-lg font-semibold">Digital Dhaal</span>
         </Link>
         <div>
-          <div className="inline-flex items-center gap-2 mb-5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-cyber)] secure-dot" />
-            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-cyber)]">
+          <div className="inline-flex items-center gap-2 mb-6">
+            <span className="w-2 h-2 rounded-full bg-[var(--color-cyber)] secure-dot" />
+            <span className="font-mono text-xs uppercase tracking-[0.32em] text-[var(--color-cyber)]">
               {sec.kicker}
             </span>
           </div>
-          <h1 className="text-3xl font-bold leading-snug mb-4 !text-white">
+          <h1 className="text-4xl xl:text-5xl font-bold leading-[1.08] mb-5 !text-white tracking-tight">
             {t.sideTitle1}
             <br />
-            {t.sideTitle2}
+            <span className="text-[var(--color-cyber)]">{t.sideTitle2}</span>
           </h1>
-          <p className="text-white/75 leading-relaxed max-w-sm">{t.sideText}</p>
-          <div className="flex flex-wrap gap-2 mt-6">
+          <p className="font-mono text-sm text-[var(--color-cyber)]/80 mb-4 tracking-tight">
+            &gt; secure_incident_response --bangla-first
+          </p>
+          <p className="text-white/75 text-lg leading-relaxed max-w-md">{t.sideText}</p>
+          <div className="flex flex-wrap gap-2 mt-7">
             <span className="dd-chip dd-chip-dark">{sec.chipEncrypted}</span>
             <span className="dd-chip dd-chip-dark">{sec.chipConfidential}</span>
             <span className="dd-chip dd-chip-dark">{sec.chipVerified}</span>

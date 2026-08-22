@@ -241,6 +241,19 @@ export const ScanFaceIcon = (p) => (
   </svg>
 );
 
+export const VideoIcon = (p) => (
+  <svg {...base} {...p}>
+    <rect x="2" y="6" width="14" height="12" rx="2" />
+    <path d="m16 10 6-3v10l-6-3" />
+  </svg>
+);
+
+export const SparkleIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z" />
+  </svg>
+);
+
 export const RefreshIcon = (p) => (
   <svg {...base} {...p}>
     <path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5" />

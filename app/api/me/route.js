@@ -9,5 +9,8 @@ export async function GET(request) {
     email: user.email,
     phone: user.phone,
     phoneVerified: user.phoneVerified,
+    emailVerified: user.emailVerified,
+    verified: user.verified,
+    kycStatus: user.kycStatus,
   });
 }

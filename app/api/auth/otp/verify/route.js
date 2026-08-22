@@ -4,6 +4,7 @@ import {
   bumpOtpAttempts,
   deleteOtp,
   markPhoneVerified,
+  markEmailVerified,
 } from "../../../../../lib/db.js";
 import { getUserFromRequest, hashOtp } from "../../../../../lib/auth.js";
 import { isSameOrigin, jsonError, cleanString } from "../../../../../lib/security.js";
@@ -34,7 +35,9 @@ export async function POST(request) {
     return jsonError("কোডটি সঠিক নয়।", 400);
   }
 
+  const channel = otp.channel === "email" ? "email" : "phone";
   deleteOtp(user.id);
-  markPhoneVerified(user.id);
-  return NextResponse.json({ ok: true });
+  if (channel === "email") markEmailVerified(user.id);
+  else markPhoneVerified(user.id);
+  return NextResponse.json({ ok: true, channel });
 }

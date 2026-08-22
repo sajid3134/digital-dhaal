@@ -18,17 +18,15 @@ import {
   BadgeCheckIcon,
   ScanFaceIcon,
   FileIcon,
+  VideoIcon,
+  EyeOffIcon,
 } from "./Icons.jsx";
-
-// Must match the "Opening message" line in digital-dhaal-intake-agent-prompt.md.
-const OPENING_MESSAGE =
-  "আসসালামু আলাইকুম / নমস্কার! আমি ডিজিটাল ঢালের সহকারী। আপনি নিরাপদ জায়গায় এসেছেন — এখানে যা বলবেন তা সম্পূর্ণ গোপন থাকবে। একটু ধীরে ধীরে বলুন, কী হয়েছে?";
 
 const CLOSED_STATUSES = new Set(["complete", "blocked_minor"]);
 
 export default function ChatWindow({
   userName,
-  phoneVerified,
+  verified = false,
   initialMessages = [],
   initialStatus = "collecting",
   cases = [],
@@ -37,6 +35,9 @@ export default function ChatWindow({
   caseStatus = "new",
   kycStatus = "none",
   breachCheck = null,
+  engineerMessage = "",
+  meetingLink = "",
+  engineerMessageAt = null,
   lang = "bn",
   t,
   bkashNumber = null,
@@ -46,7 +47,7 @@ export default function ChatWindow({
   const [messages, setMessages] = useState(
     initialMessages.length > 0
       ? initialMessages
-      : [{ role: "agent", text: OPENING_MESSAGE }],
+      : [{ role: "agent", text: t.chatui.greeting }],
   );
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -182,6 +183,47 @@ export default function ChatWindow({
     </div>
   ) : null;
 
+  // Engineer's message to the victim (with an optional meeting link). This is
+  // how the engineer reaches her — it lands right here in her chat.
+  const engineerCard = engineerMessage ? (
+    <div className="animate-fade-up rounded-2xl border border-[var(--color-primary)]/25 bg-gradient-to-br from-[var(--color-primary-soft)] to-white shadow-sm p-4 sm:p-5">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="w-8 h-8 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center shrink-0">
+          <BadgeCheckIcon width={17} height={17} />
+        </span>
+        <div className="min-w-0">
+          <p className="font-bold leading-tight text-[var(--color-primary-dark)]">
+            {c.engineerMsgTitle}
+          </p>
+          {engineerMessageAt && (
+            <p className="text-[11px] text-[var(--color-muted)] font-mono leading-tight">
+              {new Date(engineerMessageAt).toLocaleString(locale, {
+                day: "numeric",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </p>
+          )}
+        </div>
+      </div>
+      <p className="text-[15px] leading-relaxed whitespace-pre-wrap text-[var(--color-text)]">
+        {engineerMessage}
+      </p>
+      {meetingLink && (
+        <a
+          href={meetingLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white px-4 py-2.5 text-sm font-semibold transition-colors"
+        >
+          <VideoIcon width={16} height={16} />
+          {c.joinCall}
+        </a>
+      )}
+    </div>
+  ) : null;
+
   return (
     <div className="flex h-dvh bg-[var(--color-bg)]">
       <CaseSidebar
@@ -195,7 +237,7 @@ export default function ChatWindow({
 
       <div className="flex flex-col flex-1 min-w-0">
         {/* Top bar */}
-        <header className="bg-white border-b border-black/5 px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+        <header className="bg-gradient-to-r from-white via-white to-[var(--color-primary-soft)] border-b border-black/5 px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -245,11 +287,37 @@ export default function ChatWindow({
           </div>
         </header>
 
-        {!phoneVerified && <PhoneVerify t={c} tv={t.verify} />}
+        {/* Cyber trust strip — a slim partition that keeps the calm security
+            register visible and reassures "we never ask for passwords". */}
+        <div className="dd-cyber-grid border-b border-black/5">
+          <div className="max-w-3xl mx-auto px-4 py-1.5 flex items-center gap-2 flex-wrap">
+            <span className="dd-chip dd-chip-dark">
+              <LockIcon width={11} height={11} />
+              {t.security.chipEncrypted}
+            </span>
+            <span className="dd-chip dd-chip-dark">
+              <EyeOffIcon width={11} height={11} />
+              {t.security.chipConfidential}
+            </span>
+            {verified && (
+              <span className="dd-chip dd-chip-dark">
+                <BadgeCheckIcon width={11} height={11} />
+                {t.security.chipVerified}
+              </span>
+            )}
+            <span className="ml-auto hidden sm:inline font-mono text-[11px] text-[var(--color-cyber)]/85">
+              {c.neverAsk}
+            </span>
+          </div>
+        </div>
+
+        {!verified && <PhoneVerify t={c} tv={t.verify} />}
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto bg-gradient-to-b from-transparent to-[var(--color-primary-soft)]/30">
           <div className="max-w-3xl mx-auto px-4 py-5 space-y-4">
+            {engineerCard}
+
             {messages.map((m, i) => (
               <div
                 key={i}
@@ -258,14 +326,16 @@ export default function ChatWindow({
                 }`}
               >
                 {m.role !== "user" && (
-                  <DhaalIcon size={26} className="shrink-0 mb-4" />
+                  <span className="shrink-0 mb-4 w-8 h-8 rounded-full bg-white shadow-sm ring-1 ring-black/5 flex items-center justify-center">
+                    <DhaalIcon size={20} />
+                  </span>
                 )}
                 <div className={`max-w-[85%] sm:max-w-[72%] ${m.role === "user" ? "text-right" : ""}`}>
                   <div
                     className={`inline-block text-left rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-wrap ${
                       m.role === "user"
-                        ? "bg-[var(--color-bubble-user)] text-white rounded-br-md shadow-sm"
-                        : "bg-white border border-black/5 shadow-sm text-[var(--color-text)] rounded-bl-md"
+                        ? "bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-dark)] text-white rounded-br-md shadow-md shadow-[var(--color-primary)]/25"
+                        : "bg-white border border-black/[0.06] shadow-md shadow-black/[0.03] text-[var(--color-text)] rounded-bl-md"
                     }`}
                   >
                     {m.text}
@@ -281,8 +351,10 @@ export default function ChatWindow({
 
             {sending && (
               <div className="flex items-end gap-2 justify-start animate-fade-up">
-                <DhaalIcon size={26} className="shrink-0" />
-                <div className="rounded-2xl rounded-bl-md bg-white border border-black/5 shadow-sm px-4 py-3 flex items-center gap-1.5">
+                <span className="shrink-0 w-8 h-8 rounded-full bg-white shadow-sm ring-1 ring-black/5 flex items-center justify-center">
+                  <DhaalIcon size={20} />
+                </span>
+                <div className="rounded-2xl rounded-bl-md bg-white border border-black/[0.06] shadow-md shadow-black/[0.03] px-4 py-3 flex items-center gap-1.5">
                   <span className="typing-dot" />
                   <span className="typing-dot" />
                   <span className="typing-dot" />

@@ -114,6 +114,9 @@ export default function BreachCheck({ caseId, initial = null, t, lang = "bn" }) 
               <div className="flex items-center gap-2 text-green-800 font-semibold">
                 <ShieldCheckIcon width={18} height={18} />
                 {t.cleanTitle}
+                <span className="dd-chip bg-green-100 text-green-800 border border-green-200 ml-auto">
+                  ✓ {t.verifiedLabel}
+                </span>
               </div>
               <p className="text-sm text-green-800/80 mt-1.5">{t.cleanSub}</p>
             </div>

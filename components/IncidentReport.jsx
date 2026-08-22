@@ -37,6 +37,7 @@ const EVENT_LABELS = {
   created: "Case opened",
   submitted: "Intake completed — entered engineer queue",
   breach_checked: "Data-breach check performed",
+  engineer_message: "Engineer contacted the reporter",
   verifying: "Identity verification started",
   contacted: "Reporter contacted",
   in_progress: "Resolution in progress",
