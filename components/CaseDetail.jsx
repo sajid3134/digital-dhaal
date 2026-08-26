@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FileIcon } from "./Icons.jsx";
+import { FileIcon, VideoIcon } from "./Icons.jsx";
+import TakedownPlaybook from "./TakedownPlaybook.jsx";
 
 const WORKFLOW_OPTIONS = [
   ["new", "New"],
@@ -173,6 +174,9 @@ export default function CaseDetail({ caseData, events = [] }) {
         </div>
       )}
 
+      {/* Image-takedown toolkit — the constant procedure + per-platform routes */}
+      <TakedownPlaybook pillar={pillar} />
+
       {/* Contact the victim — message + meeting link, delivered in her chat */}
       <div className="dd-card p-4 space-y-3">
         <div>
@@ -194,10 +198,21 @@ export default function CaseDetail({ caseData, events = [] }) {
         <input
           value={meetingLink}
           onChange={(e) => setMeetingLink(e.target.value)}
-          placeholder="Meeting link (optional) — https://meet.google.com/..."
+          placeholder="Paste a Google Meet / Zoom / Teams link (optional) — https://…"
           type="url"
           className="w-full rounded-xl border border-black/10 px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)] font-mono"
         />
+        {meetingLink && (
+          <a
+            href={meetingLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm text-[var(--color-primary)] hover:underline"
+          >
+            <VideoIcon width={15} height={15} />
+            Test this call link ↗ — the victim sees a "Join the call" button
+          </a>
+        )}
         <div className="flex items-center gap-3">
           <button
             onClick={save}

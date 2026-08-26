@@ -23,7 +23,7 @@ export async function POST(request) {
   if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
     return jsonError("Rating must be 1-5", 400);
   }
-  if (review.length < 5) return jsonError("Review is required", 400);
+  // Review is optional — a star rating alone is a valid submission.
 
   // TrxID only makes sense on paid tiers; validated but always optional —
   // a review without payment is perfectly fine.

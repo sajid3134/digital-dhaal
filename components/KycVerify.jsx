@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import {
   IdCardIcon,
-  CameraIcon,
   UploadIcon,
-  ScanFaceIcon,
   BadgeCheckIcon,
   RefreshIcon,
   AlertIcon,
@@ -30,75 +28,31 @@ function ScanCorners() {
   );
 }
 
-// Prototype identity check. IMPORTANT: no real biometric matching happens and
-// no image is ever uploaded — the NID photo and selfie stay in the browser as
-// data URLs. Only a "verified" status flag is sent to the server.
+// Prototype identity check. IMPORTANT: no real matching happens and no image is
+// uploaded — the ID photos stay in the browser as data URLs. Only a "verified"
+// status flag is sent to the server. The user photographs both sides of their
+// NSU ID card or NID; no selfie is taken.
 export default function KycVerify({ t, initialStatus = "none" }) {
-  const [nid, setNid] = useState(null);
-  const [selfie, setSelfie] = useState(null);
-  const [cameraOn, setCameraOn] = useState(false);
-  const [cameraError, setCameraError] = useState("");
+  const [front, setFront] = useState(null);
+  const [back, setBack] = useState(null);
   const [error, setError] = useState("");
   const [phase, setPhase] = useState(initialStatus === "verified" ? "done" : "idle");
   const [step, setStep] = useState(0);
   const [confidence, setConfidence] = useState(97);
 
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const streamRef = useRef(null);
-  const fileRef = useRef(null);
+  const frontRef = useRef(null);
+  const backRef = useRef(null);
 
-  function stopCamera() {
-    streamRef.current?.getTracks().forEach((track) => track.stop());
-    streamRef.current = null;
-    setCameraOn(false);
-  }
-
-  // Always release the camera when the component goes away.
-  useEffect(() => () => stopCamera(), []);
-
-  async function startCamera() {
-    setCameraError("");
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" },
-        audio: false,
-      });
-      streamRef.current = stream;
-      setCameraOn(true);
-      // Attach after the <video> is in the DOM.
-      requestAnimationFrame(() => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play().catch(() => {});
-        }
-      });
-    } catch {
-      setCameraError(t.cameraError);
-    }
-  }
-
-  function capture() {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas || !video.videoWidth) return;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
-    setSelfie(canvas.toDataURL("image/jpeg", 0.85));
-    stopCamera();
-  }
-
-  function onNidFile(e) {
+  function onFile(e, setter) {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith("image/")) return;
     const reader = new FileReader();
-    reader.onload = () => setNid(reader.result);
+    reader.onload = () => setter(reader.result);
     reader.readAsDataURL(file);
   }
 
   async function verify() {
-    if (!nid || !selfie) {
+    if (!front || !back) {
       setError(t.needBoth);
       return;
     }
@@ -122,8 +76,8 @@ export default function KycVerify({ t, initialStatus = "none" }) {
   }
 
   function reset() {
-    setNid(null);
-    setSelfie(null);
+    setFront(null);
+    setBack(null);
     setError("");
     setStep(0);
     setPhase("idle");
@@ -166,7 +120,7 @@ export default function KycVerify({ t, initialStatus = "none" }) {
             className="rounded-xl border border-black/10 px-5 py-2.5 text-sm font-medium hover:bg-black/[0.03] transition-colors inline-flex items-center justify-center gap-2"
           >
             <RefreshIcon width={15} height={15} />
-            {t.retake}
+            {t.chooseFile}
           </button>
         </div>
 
@@ -176,6 +130,44 @@ export default function KycVerify({ t, initialStatus = "none" }) {
   }
 
   /* --------------------------- capture flow --------------------------- */
+  const uploadBox = (img, setter, ref, title, hint) => (
+    <div className="dd-card p-5">
+      <div className="flex items-center gap-2 mb-1">
+        <IdCardIcon width={18} height={18} className="text-[var(--color-primary-dark)]" />
+        <h3 className="font-semibold">{title}</h3>
+        {img && <CheckIcon width={16} height={16} className="text-green-600 ml-auto" />}
+      </div>
+      <p className="text-sm text-[var(--color-muted)] mb-3">{hint}</p>
+
+      <div className="relative aspect-[16/10] rounded-xl border-2 border-dashed border-[var(--color-primary)]/25 bg-[var(--color-primary-soft)]/40 overflow-hidden flex flex-col items-center justify-center">
+        {img ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={img} alt="ID preview" className="w-full h-full object-cover" />
+            <ScanCorners />
+          </>
+        ) : (
+          <>
+            <ScanCorners />
+            <IdCardIcon width={38} height={38} className="text-[var(--color-primary)]/40" />
+            <p className="text-[11px] text-[var(--color-primary-dark)]/70 mt-2 px-4 text-center">
+              {t.frameLabel}
+            </p>
+          </>
+        )}
+      </div>
+
+      <input ref={ref} type="file" accept="image/*" capture="environment" onChange={(e) => onFile(e, setter)} className="hidden" />
+      <button
+        onClick={() => ref.current?.click()}
+        className="mt-3 w-full rounded-xl border border-black/10 py-2.5 text-sm font-medium hover:bg-black/[0.03] transition-colors inline-flex items-center justify-center gap-2"
+      >
+        <UploadIcon width={16} height={16} />
+        {img ? t.replaceFile : t.chooseFile}
+      </button>
+    </div>
+  );
+
   return (
     <div className="space-y-4">
       {/* Safety reassurance — front and center, calm and trust-building */}
@@ -191,126 +183,8 @@ export default function KycVerify({ t, initialStatus = "none" }) {
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
-        {/* Step 1 — NID */}
-        <div className="dd-card p-5">
-          <div className="flex items-center gap-2 mb-1">
-            <IdCardIcon width={18} height={18} className="text-[var(--color-primary-dark)]" />
-            <h3 className="font-semibold">{t.step1Title}</h3>
-            {nid && <CheckIcon width={16} height={16} className="text-green-600 ml-auto" />}
-          </div>
-          <p className="text-sm text-[var(--color-muted)] mb-3">{t.step1Hint}</p>
-
-          <div className="relative aspect-[16/10] rounded-xl border-2 border-dashed border-[var(--color-primary)]/25 bg-[var(--color-primary-soft)]/40 overflow-hidden flex flex-col items-center justify-center">
-            {nid ? (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={nid} alt="ID preview" className="w-full h-full object-cover" />
-                <ScanCorners />
-              </>
-            ) : (
-              <>
-                <ScanCorners />
-                <IdCardIcon width={38} height={38} className="text-[var(--color-primary)]/40" />
-                <p className="text-[11px] text-[var(--color-primary-dark)]/70 mt-2 px-4 text-center">
-                  {t.frameLabel}
-                </p>
-              </>
-            )}
-          </div>
-
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            onChange={onNidFile}
-            className="hidden"
-          />
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="mt-3 w-full rounded-xl border border-black/10 py-2.5 text-sm font-medium hover:bg-black/[0.03] transition-colors inline-flex items-center justify-center gap-2"
-          >
-            <UploadIcon width={16} height={16} />
-            {nid ? t.replaceFile : t.chooseFile}
-          </button>
-        </div>
-
-        {/* Step 2 — Selfie */}
-        <div className="dd-card p-5">
-          <div className="flex items-center gap-2 mb-1">
-            <ScanFaceIcon width={18} height={18} className="text-[var(--color-primary-dark)]" />
-            <h3 className="font-semibold">{t.step2Title}</h3>
-            {selfie && <CheckIcon width={16} height={16} className="text-green-600 ml-auto" />}
-          </div>
-          <p className="text-sm text-[var(--color-muted)] mb-3">{t.step2Hint}</p>
-
-          <div className="relative aspect-[16/10] rounded-xl border-2 border-dashed border-[var(--color-primary)]/25 bg-[var(--color-primary-soft)]/40 overflow-hidden flex flex-col items-center justify-center">
-            {selfie ? (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={selfie} alt="Selfie preview" className="w-full h-full object-cover" />
-                <ScanCorners />
-              </>
-            ) : cameraOn ? (
-              <>
-                <video
-                  ref={videoRef}
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover -scale-x-100"
-                />
-                {/* Face guide oval + corners */}
-                <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                  <span className="w-[46%] h-[78%] rounded-[50%] border-2 border-white/70 shadow-[0_0_0_9999px_rgba(0,0,0,0.12)]" />
-                </span>
-                <ScanCorners />
-                <p className="absolute bottom-2 inset-x-0 text-center text-[11px] text-white font-medium drop-shadow">
-                  {t.faceFrameLabel}
-                </p>
-              </>
-            ) : (
-              <>
-                <ScanCorners />
-                <ScanFaceIcon width={38} height={38} className="text-[var(--color-primary)]/40" />
-                <p className="text-[11px] text-[var(--color-primary-dark)]/70 mt-2 px-4 text-center">
-                  {t.faceFrameLabel}
-                </p>
-              </>
-            )}
-          </div>
-          <canvas ref={canvasRef} className="hidden" />
-
-          {!selfie ? (
-            cameraOn ? (
-              <button
-                onClick={capture}
-                className="mt-3 w-full rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white py-2.5 text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2"
-              >
-                <CameraIcon width={16} height={16} />
-                {t.capture}
-              </button>
-            ) : (
-              <button
-                onClick={startCamera}
-                className="mt-3 w-full rounded-xl border border-black/10 py-2.5 text-sm font-medium hover:bg-black/[0.03] transition-colors inline-flex items-center justify-center gap-2"
-              >
-                <CameraIcon width={16} height={16} />
-                {t.startCamera}
-              </button>
-            )
-          ) : (
-            <button
-              onClick={() => {
-                setSelfie(null);
-                startCamera();
-              }}
-              className="mt-3 w-full rounded-xl border border-black/10 py-2.5 text-sm font-medium hover:bg-black/[0.03] transition-colors inline-flex items-center justify-center gap-2"
-            >
-              <RefreshIcon width={15} height={15} />
-              {t.retake}
-            </button>
-          )}
-          {cameraError && <p className="text-xs text-red-600 mt-2">{cameraError}</p>}
-        </div>
+        {uploadBox(front, setFront, frontRef, t.step1Title, t.step1Hint)}
+        {uploadBox(back, setBack, backRef, t.step2Title, t.step2Hint)}
       </div>
 
       {error && <p className="text-sm text-red-600 text-center">{error}</p>}

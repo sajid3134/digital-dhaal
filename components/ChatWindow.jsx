@@ -183,44 +183,66 @@ export default function ChatWindow({
     </div>
   ) : null;
 
-  // Engineer's message to the victim (with an optional meeting link). This is
-  // how the engineer reaches her — it lands right here in her chat.
+  // Engineer's message to the victim (with an optional meeting link). Rendered
+  // as its own prominent, catchable panel at the very top of the chat — this is
+  // how the engineer reaches her, so it must be impossible to miss.
   const engineerCard = engineerMessage ? (
-    <div className="animate-fade-up rounded-2xl border border-[var(--color-primary)]/25 bg-gradient-to-br from-[var(--color-primary-soft)] to-white shadow-sm p-4 sm:p-5">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="w-8 h-8 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center shrink-0">
-          <BadgeCheckIcon width={17} height={17} />
+    <div className="animate-fade-up rounded-2xl border-2 border-[var(--color-primary)]/35 bg-gradient-to-br from-[var(--color-primary-soft)] to-[var(--color-surface)] shadow-md overflow-hidden">
+      <div className="bg-[var(--color-primary)] text-white px-5 py-2.5 flex items-center gap-2">
+        <BadgeCheckIcon width={17} height={17} />
+        <span className="font-semibold text-[15px]">{c.engineerMsgTitle}</span>
+        {engineerMessageAt && (
+          <span className="ml-auto text-[11px] text-white/85 font-mono">
+            {new Date(engineerMessageAt).toLocaleString(locale, {
+              day: "numeric",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+        )}
+      </div>
+      <div className="p-5">
+        <p className="text-[16px] leading-relaxed whitespace-pre-wrap text-[var(--color-text)]">
+          {engineerMessage}
+        </p>
+        {meetingLink && (
+          <div className="mt-4 rounded-xl border border-[var(--color-primary)]/25 bg-[var(--color-surface)] p-3.5 flex flex-col sm:flex-row sm:items-center gap-3">
+            <span className="w-12 h-12 rounded-xl bg-[var(--color-primary-soft)] text-[var(--color-primary-dark)] flex items-center justify-center shrink-0">
+              <VideoIcon width={24} height={24} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-bold leading-tight">{c.joinCallTitle}</p>
+              <p className="text-xs text-[var(--color-muted)] font-mono truncate">{meetingLink}</p>
+            </div>
+            <a
+              href={meetingLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white px-6 py-3 text-[15px] font-bold transition-all hover:shadow-md"
+            >
+              <VideoIcon width={19} height={19} />
+              {c.joinCall}
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  ) : null;
+
+  // Minimal, post-service review — only shown once the case is resolved.
+  const reviewBlock = resolved ? (
+    <div className="animate-fade-up space-y-3 pt-1">
+      <div className="dd-card p-5 flex items-start gap-3">
+        <span className="w-10 h-10 shrink-0 rounded-full bg-green-100 text-green-700 flex items-center justify-center">
+          <CheckCircleIcon width={22} height={22} />
         </span>
-        <div className="min-w-0">
-          <p className="font-bold leading-tight text-[var(--color-primary-dark)]">
-            {c.engineerMsgTitle}
-          </p>
-          {engineerMessageAt && (
-            <p className="text-[11px] text-[var(--color-muted)] font-mono leading-tight">
-              {new Date(engineerMessageAt).toLocaleString(locale, {
-                day: "numeric",
-                month: "short",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </p>
-          )}
+        <div>
+          <h3 className="font-bold">{c.resolvedTitle}</h3>
+          <p className="text-sm text-[var(--color-muted)] leading-relaxed mt-0.5">{c.resolvedSub}</p>
         </div>
       </div>
-      <p className="text-[15px] leading-relaxed whitespace-pre-wrap text-[var(--color-text)]">
-        {engineerMessage}
-      </p>
-      {meetingLink && (
-        <a
-          href={meetingLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white px-4 py-2.5 text-sm font-semibold transition-colors"
-        >
-          <VideoIcon width={16} height={16} />
-          {c.joinCall}
-        </a>
-      )}
+      <SupportSection t={t} bkashNumber={bkashNumber} compact />
     </div>
   ) : null;
 
@@ -246,9 +268,9 @@ export default function ChatWindow({
             >
               <MenuIcon width={18} height={18} />
             </button>
-            <DhaalIcon size={34} className="shrink-0" />
+            <DhaalIcon size={38} className="shrink-0" />
             <div className="min-w-0">
-              <p className="font-bold leading-tight truncate">Digital Dhaal</p>
+              <p className="font-bold text-[17px] leading-tight truncate">Digital Dhaal</p>
               <p className="text-xs text-[var(--color-muted)] leading-tight flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
                 {c.confidential}
@@ -332,7 +354,7 @@ export default function ChatWindow({
                 )}
                 <div className={`max-w-[85%] sm:max-w-[72%] ${m.role === "user" ? "text-right" : ""}`}>
                   <div
-                    className={`inline-block text-left rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-wrap ${
+                    className={`inline-block text-left rounded-2xl px-4 py-3 text-[16px] leading-relaxed whitespace-pre-wrap ${
                       m.role === "user"
                         ? "bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-dark)] text-white rounded-br-md shadow-md shadow-[var(--color-primary)]/25"
                         : "bg-white border border-black/[0.06] shadow-md shadow-black/[0.03] text-[var(--color-text)] rounded-bl-md"
@@ -410,8 +432,6 @@ export default function ChatWindow({
                 )}
 
                 {securityTools}
-
-                <SupportSection t={t} bkashNumber={bkashNumber} compact />
               </div>
             )}
 
@@ -427,6 +447,8 @@ export default function ChatWindow({
                 {securityTools}
               </div>
             )}
+
+            {reviewBlock}
 
             <div ref={bottomRef} />
           </div>
