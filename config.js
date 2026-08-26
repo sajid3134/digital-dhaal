@@ -13,15 +13,17 @@ export const PROVIDERS = {
     apiKeyEnv: "GEMINI_API_KEY",
   },
 
-  // OpenRouter — one key, dozens of models, several genuinely FREE. Best free
-  // pick. Browse openrouter.ai/models and use any id tagged ":free", e.g.
-  //   deepseek/deepseek-chat-v3-0324:free
-  //   meta-llama/llama-3.3-70b-instruct:free
-  //   qwen/qwen-2.5-72b-instruct:free
+  // OpenRouter — one key, many models, several genuinely FREE. Free model ids
+  // change often, so if you get a 404 "unavailable for free", pick a current
+  // one from openrouter.ai/models (filter: Free). Verified-good for Bangla+JSON
+  // at time of writing: minimax/minimax-m3:free, google/gemma-4-31b-it:free,
+  // z-ai/glm-5.2:free. (Avoid the "openrouter/free" auto-router — it can route
+  // to non-chat models.) Note: the shared free pool is often rate-limited (429)
+  // at peak; the app retries, but Groq below is more reliable if that annoys you.
   openrouter: {
     type: "openai",
     baseUrl: "https://openrouter.ai/api/v1",
-    model: "deepseek/deepseek-chat-v3-0324:free",
+    model: "minimax/minimax-m3:free",
     apiKeyEnv: "OPENROUTER_API_KEY",
     headers: { "HTTP-Referer": "https://digitaldhaal.local", "X-Title": "Digital Dhaal" },
   },
