@@ -34,7 +34,7 @@ const EVENT_LABELS = {
   closed: "Case closed",
 };
 
-export default function CaseDetail({ caseData, events = [] }) {
+export default function CaseDetail({ caseData, events = [], evidence = [] }) {
   const { caseCard, conversation, flags, pillar, status, severity, user, breachCheck } = caseData;
   const [caseStatus, setCaseStatus] = useState(caseData.caseStatus);
   const [notes, setNotes] = useState(caseData.engineerNotes);
@@ -171,6 +171,34 @@ export default function CaseDetail({ caseData, events = [] }) {
           ) : (
             <p className="text-gray-500 mt-2">Phone identifiers not covered by the breach source.</p>
           )}
+        </div>
+      )}
+
+      {/* Evidence the victim attached (screenshots) */}
+      {evidence.length > 0 && (
+        <div className="dd-card p-4">
+          <h2 className="font-semibold text-sm">Evidence from the reporter ({evidence.length})</h2>
+          <p className="text-xs text-gray-500 mt-0.5 mb-3">
+            Screenshots the reporter attached. Click to open full-size.
+          </p>
+          <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+            {evidence.map((ev) => (
+              <a
+                key={ev.id}
+                href={`/api/admin/evidence/${ev.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="aspect-square rounded-lg overflow-hidden border border-black/10 bg-black/[0.03] hover:ring-2 hover:ring-[var(--color-primary)]/40 transition-shadow"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/api/admin/evidence/${ev.id}`}
+                  alt="evidence"
+                  className="w-full h-full object-cover"
+                />
+              </a>
+            ))}
+          </div>
         </div>
       )}
 

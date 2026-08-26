@@ -1,7 +1,12 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getUserFromCookieStore } from "../../lib/auth.js";
-import { getCaseById, listCasesForUser, listCaseEvents } from "../../lib/db.js";
+import {
+  getCaseById,
+  listCasesForUser,
+  listCaseEvents,
+  listEvidence,
+} from "../../lib/db.js";
 import { getLang, STRINGS } from "../../lib/i18n.js";
 import ChatWindow from "../../components/ChatWindow.jsx";
 
@@ -49,6 +54,7 @@ export default async function ChatPage() {
   let engineerMessage = "";
   let meetingLink = "";
   let engineerMessageAt = null;
+  let evidence = [];
 
   if (sessionId) {
     const caseRow = getCaseById(sessionId);
@@ -62,6 +68,7 @@ export default async function ChatPage() {
       engineerMessage = caseRow.engineerMessage;
       meetingLink = caseRow.meetingLink;
       engineerMessageAt = caseRow.engineerMessageAt;
+      evidence = listEvidence(caseRow.id);
       // Safe subset for the victim: event types + timestamps only.
       caseEvents = listCaseEvents(caseRow.id);
     }
@@ -83,6 +90,7 @@ export default async function ChatPage() {
       engineerMessage={engineerMessage}
       meetingLink={meetingLink}
       engineerMessageAt={engineerMessageAt}
+      initialEvidence={evidence}
       lang={lang}
       t={t}
       bkashNumber={process.env.BKASH_NUMBER || null}

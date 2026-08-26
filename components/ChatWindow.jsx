@@ -8,6 +8,7 @@ import SupportSection from "./SupportSection.jsx";
 import CaseSidebar from "./CaseSidebar.jsx";
 import CaseProgress from "./CaseProgress.jsx";
 import BreachCheck from "./BreachCheck.jsx";
+import EvidencePanel from "./EvidencePanel.jsx";
 import { DhaalIcon } from "./Brand.jsx";
 import {
   SendIcon,
@@ -20,7 +21,10 @@ import {
   FileIcon,
   VideoIcon,
   EyeOffIcon,
+  PaperclipIcon,
 } from "./Icons.jsx";
+
+const MAX_EVIDENCE = 10;
 
 const CLOSED_STATUSES = new Set(["complete", "blocked_minor"]);
 
@@ -38,12 +42,17 @@ export default function ChatWindow({
   engineerMessage = "",
   meetingLink = "",
   engineerMessageAt = null,
+  initialEvidence = [],
   lang = "bn",
   t,
   bkashNumber = null,
 }) {
   const kycVerified = kycStatus === "verified";
   const router = useRouter();
+  const [evidence, setEvidence] = useState(initialEvidence);
+  const [evUploading, setEvUploading] = useState(false);
+  const [evError, setEvError] = useState("");
+  const attachRef = useRef(null);
   const [messages, setMessages] = useState(
     initialMessages.length > 0
       ? initialMessages
@@ -131,9 +140,63 @@ export default function ChatWindow({
     router.refresh();
   }
 
+  // Upload one or more screenshots as evidence to the active case. Shared by the
+  // attach button, the evidence panel's "add" tile, and paste-into-chat.
+  async function uploadFiles(fileList) {
+    if (!activeCaseId) return;
+    const files = Array.from(fileList || []).filter((f) => f.type?.startsWith("image/"));
+    if (files.length === 0) return;
+    setEvError("");
+    setEvUploading(true);
+    try {
+      for (const file of files) {
+        const fd = new FormData();
+        fd.append("caseId", activeCaseId);
+        fd.append("file", file);
+        const res = await fetch("/api/evidence", { method: "POST", body: fd });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setEvError(data.error || "Upload failed.");
+          break;
+        }
+        setEvidence(data.evidence);
+      }
+    } catch {
+      setEvError("Upload failed — connection problem.");
+    } finally {
+      setEvUploading(false);
+    }
+  }
+
+  function handlePaste(e) {
+    if (!activeCaseId) return;
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    const imgs = [];
+    for (const it of items) {
+      if (it.kind === "file" && it.type.startsWith("image/")) {
+        const f = it.getAsFile();
+        if (f) imgs.push(f);
+      }
+    }
+    if (imgs.length) {
+      e.preventDefault();
+      uploadFiles(imgs);
+    }
+  }
+
   const showTimeline =
     activeCaseId && (done || (caseStatus && caseStatus !== "new"));
   const resolved = caseStatus === "resolved" || caseStatus === "closed";
+
+  // Colour-coded case status for the header pill.
+  const statusPill = !activeCaseId
+    ? null
+    : resolved
+      ? { label: t.progress.resolved, cls: "bg-green-100 text-green-700", dot: "bg-green-500" }
+      : done
+        ? { label: c.statusDone, cls: "bg-sky-100 text-sky-700", dot: "bg-sky-500" }
+        : { label: c.statusActive, cls: "bg-amber-100 text-amber-700", dot: "bg-amber-500" };
 
   // Per-case security tools: breach/leak check, identity verification (demo),
   // and — once the case is resolved — the downloadable incident report.
@@ -276,15 +339,12 @@ export default function ChatWindow({
                 {c.confidential}
               </p>
             </div>
-            {activeCaseId && (
+            {statusPill && (
               <span
-                className={`hidden sm:inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
-                  done
-                    ? "bg-green-100 text-green-700"
-                    : "bg-amber-100 text-amber-700"
-                }`}
+                className={`hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${statusPill.cls}`}
               >
-                {done ? c.statusDone : c.statusActive}
+                <span className={`w-1.5 h-1.5 rounded-full ${statusPill.dot}`} />
+                {statusPill.label}
               </span>
             )}
           </div>
@@ -335,11 +395,17 @@ export default function ChatWindow({
 
         {!verified && <PhoneVerify t={c} tv={t.verify} />}
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto bg-gradient-to-b from-transparent to-[var(--color-primary-soft)]/30">
-          <div className="max-w-3xl mx-auto px-4 py-5 space-y-4">
-            {engineerCard}
+        {/* Pinned engineer update — sits above the scroll so it's always
+            visible; no more scrolling to the top to find the call link. */}
+        {engineerMessage && (
+          <div className="shrink-0 border-b border-black/5 bg-gradient-to-b from-[var(--color-primary-soft)]/70 to-transparent">
+            <div className="max-w-3xl mx-auto px-4 py-3">{engineerCard}</div>
+          </div>
+        )}
 
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto dd-chat-bg">
+          <div className="max-w-3xl mx-auto px-4 py-5 space-y-4">
             {messages.map((m, i) => (
               <div
                 key={i}
@@ -456,11 +522,48 @@ export default function ChatWindow({
 
         {/* Composer */}
         <div className="bg-white border-t border-black/5">
-          <form onSubmit={handleSend} className="max-w-3xl mx-auto px-4 py-3 flex gap-2">
+          {activeCaseId && (
+            <div className="max-w-3xl mx-auto px-4 pt-3">
+              <EvidencePanel
+                evidence={evidence}
+                max={MAX_EVIDENCE}
+                uploading={evUploading}
+                error={evError}
+                onFiles={uploadFiles}
+                t={t.evidence}
+              />
+            </div>
+          )}
+          <form onSubmit={handleSend} className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-2">
+            {activeCaseId && (
+              <>
+                <input
+                  ref={attachRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    uploadFiles(e.target.files);
+                    e.target.value = "";
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => attachRef.current?.click()}
+                  aria-label={t.evidence.attach}
+                  title={t.evidence.attach}
+                  className="w-12 h-12 shrink-0 rounded-full border border-black/10 text-[var(--color-muted)] hover:text-[var(--color-primary-dark)] hover:border-[var(--color-primary)]/40 flex items-center justify-center transition-colors"
+                >
+                  <PaperclipIcon width={19} height={19} />
+                </button>
+              </>
+            )}
             <input
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onPaste={handlePaste}
               placeholder={done ? c.placeholderDone : c.placeholder}
               disabled={sending}
               autoFocus

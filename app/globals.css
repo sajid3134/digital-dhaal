@@ -151,6 +151,18 @@ section[id] {
   background-position: 0 0, 11px 11px;
 }
 
+/* Chat message area — a soft, tinted texture so it never reads as flat
+   "white paper". Faint teal dot grid + a gentle corner glow. */
+.dd-chat-bg {
+  background-color: #f2f8f7;
+  background-image:
+    radial-gradient(rgb(13 148 136 / 0.05) 1px, transparent 1px),
+    radial-gradient(circle at 100% 0%, rgb(13 148 136 / 0.07), transparent 55%),
+    radial-gradient(circle at 0% 100%, rgb(245 158 11 / 0.05), transparent 45%);
+  background-size: 22px 22px, 100% 100%, 100% 100%;
+  background-attachment: local, local, local;
+}
+
 /* Soft live-status pulse used on "secure session" dots */
 @keyframes securePulse {
   0%, 100% { opacity: 1; transform: scale(1); }

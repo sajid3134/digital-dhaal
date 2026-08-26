@@ -241,6 +241,20 @@ export const ScanFaceIcon = (p) => (
   </svg>
 );
 
+export const ImageIcon = (p) => (
+  <svg {...base} {...p}>
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <circle cx="8.5" cy="8.5" r="1.5" />
+    <path d="m21 15-5-5L5 21" />
+  </svg>
+);
+
+export const PaperclipIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M21.44 11.05 12.25 20.24a5 5 0 0 1-7.07-7.07l9.19-9.19a3 3 0 0 1 4.24 4.24l-9.2 9.19a1 1 0 0 1-1.41-1.41l8.49-8.49" />
+  </svg>
+);
+
 export const VideoIcon = (p) => (
   <svg {...base} {...p}>
     <rect x="2" y="6" width="14" height="12" rx="2" />
