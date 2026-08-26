@@ -20,7 +20,6 @@ import {
   ScanFaceIcon,
   FileIcon,
   VideoIcon,
-  EyeOffIcon,
   PaperclipIcon,
 } from "./Icons.jsx";
 
@@ -369,30 +368,6 @@ export default function ChatWindow({
           </div>
         </header>
 
-        {/* Cyber trust strip — a slim partition that keeps the calm security
-            register visible and reassures "we never ask for passwords". */}
-        <div className="dd-cyber-grid border-b border-black/5">
-          <div className="max-w-3xl mx-auto px-4 py-1.5 flex items-center gap-2 flex-wrap">
-            <span className="dd-chip dd-chip-dark">
-              <LockIcon width={11} height={11} />
-              {t.security.chipEncrypted}
-            </span>
-            <span className="dd-chip dd-chip-dark">
-              <EyeOffIcon width={11} height={11} />
-              {t.security.chipConfidential}
-            </span>
-            {verified && (
-              <span className="dd-chip dd-chip-dark">
-                <BadgeCheckIcon width={11} height={11} />
-                {t.security.chipVerified}
-              </span>
-            )}
-            <span className="ml-auto hidden sm:inline font-mono text-[11px] text-[var(--color-cyber)]/85">
-              {c.neverAsk}
-            </span>
-          </div>
-        </div>
-
         {!verified && <PhoneVerify t={c} tv={t.verify} />}
 
         {/* Pinned engineer update — sits above the scroll so it's always
@@ -522,7 +497,7 @@ export default function ChatWindow({
 
         {/* Composer */}
         <div className="bg-white border-t border-black/5">
-          {activeCaseId && (
+          {activeCaseId && (evidence.length > 0 || evUploading) && (
             <div className="max-w-3xl mx-auto px-4 pt-3">
               <EvidencePanel
                 evidence={evidence}
@@ -533,6 +508,9 @@ export default function ChatWindow({
                 t={t.evidence}
               />
             </div>
+          )}
+          {evError && !(evidence.length > 0 || evUploading) && (
+            <p className="max-w-3xl mx-auto px-4 pt-2 text-xs text-red-600">{evError}</p>
           )}
           <form onSubmit={handleSend} className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-2">
             {activeCaseId && (

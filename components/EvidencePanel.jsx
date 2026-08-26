@@ -18,32 +18,25 @@ export default function EvidencePanel({
   const full = evidence.length >= max;
 
   return (
-    <div className="dd-card p-4">
+    <div className="rounded-xl border border-black/[0.07] bg-[var(--color-surface)] px-3 py-2.5">
       <div className="flex items-center gap-2 mb-2">
-        <span className="w-8 h-8 shrink-0 rounded-lg bg-[var(--color-primary-soft)] text-[var(--color-primary-dark)] flex items-center justify-center">
-          <ImageIcon width={17} height={17} />
+        <ImageIcon width={15} height={15} className="text-[var(--color-primary-dark)] shrink-0" />
+        <p className="font-semibold text-[13px] leading-none">{t.title}</p>
+        <span className="text-[11px] text-[var(--color-muted)] font-mono">{evidence.length}/{max}</span>
+        <span className="ml-auto flex items-center gap-1 text-[11px] text-amber-700 leading-tight text-right">
+          <AlertIcon width={12} height={12} className="shrink-0" />
+          <span className="hidden sm:inline">{t.safety}</span>
         </span>
-        <div className="min-w-0">
-          <p className="font-semibold text-sm leading-tight">{t.title}</p>
-          <p className="text-[11px] text-[var(--color-muted)] leading-tight">
-            {evidence.length}/{max}
-          </p>
-        </div>
       </div>
 
-      <div className="rounded-lg bg-amber-50 border border-amber-100 px-3 py-2 flex gap-2 text-[12px] text-amber-800 leading-snug mb-3">
-        <AlertIcon width={14} height={14} className="shrink-0 mt-0.5" />
-        <span>{t.safety}</span>
-      </div>
-
-      <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+      <div className="flex gap-2 flex-wrap">
         {evidence.map((ev) => (
           <a
             key={ev.id}
             href={`/api/evidence/${ev.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="relative aspect-square rounded-lg overflow-hidden border border-black/10 bg-black/[0.03] hover:ring-2 hover:ring-[var(--color-primary)]/40 transition-shadow"
+            className="w-16 h-16 rounded-lg overflow-hidden border border-black/10 bg-black/[0.03] hover:ring-2 hover:ring-[var(--color-primary)]/40 transition-shadow shrink-0"
             title={t.open}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -56,24 +49,25 @@ export default function EvidencePanel({
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            className="aspect-square rounded-lg border-2 border-dashed border-[var(--color-primary)]/30 text-[var(--color-primary-dark)] bg-[var(--color-primary-soft)]/40 hover:bg-[var(--color-primary-soft)] flex flex-col items-center justify-center gap-1 transition-colors disabled:opacity-50"
+            className="w-16 h-16 shrink-0 rounded-lg border-2 border-dashed border-[var(--color-primary)]/30 text-[var(--color-primary-dark)] bg-[var(--color-primary-soft)]/40 hover:bg-[var(--color-primary-soft)] flex flex-col items-center justify-center gap-0.5 transition-colors disabled:opacity-50"
           >
             {uploading ? (
               <span className="typing-dot !bg-[var(--color-primary)]" />
             ) : (
               <>
-                <PlusIcon width={18} height={18} />
-                <span className="text-[10px] font-medium leading-none text-center px-1">{t.add}</span>
+                <PlusIcon width={16} height={16} />
+                <span className="text-[9px] font-medium leading-none text-center px-1">{t.add}</span>
               </>
             )}
           </button>
         )}
       </div>
 
-      {evidence.length === 0 && !uploading && (
-        <p className="text-xs text-[var(--color-muted)] mt-2">{t.empty}</p>
-      )}
-      {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
+      <span className="sm:hidden mt-1.5 flex items-start gap-1 text-[11px] text-amber-700 leading-snug">
+        <AlertIcon width={12} height={12} className="shrink-0 mt-0.5" />
+        {t.safety}
+      </span>
+      {error && <p className="text-xs text-red-600 mt-1.5">{error}</p>}
 
       <input
         ref={inputRef}
