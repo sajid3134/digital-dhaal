@@ -65,11 +65,16 @@ export default function CaseTable({ cases }) {
                   )}
                 </td>
                 <td className="py-2.5 px-4">
-                  {c.user?.phoneVerified ? (
-                    <span className="text-green-600 font-medium text-xs">✓ phone</span>
-                  ) : (
-                    <span className="text-gray-400 text-xs">—</span>
-                  )}
+                  <div className="flex flex-col gap-0.5">
+                    {c.user?.phoneVerified ? (
+                      <span className="text-green-600 font-medium text-xs">✓ phone</span>
+                    ) : (
+                      <span className="text-gray-400 text-xs">—</span>
+                    )}
+                    {c.user?.kycStatus === "verified" && (
+                      <span className="text-green-600 font-medium text-xs">✓ ID (demo)</span>
+                    )}
+                  </div>
                 </td>
                 <td className="py-2.5 px-4 text-xs text-gray-500 whitespace-nowrap">
                   {new Date(c.updatedAt).toLocaleString()}

@@ -2,36 +2,52 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import PhoneVerify from "./PhoneVerify.jsx";
 import SupportSection from "./SupportSection.jsx";
 import CaseSidebar from "./CaseSidebar.jsx";
 import CaseProgress from "./CaseProgress.jsx";
-import { SendIcon, MenuIcon, CheckCircleIcon, PlusIcon } from "./Icons.jsx";
-
-// Must match the "Opening message" line in digital-dhaal-intake-agent-prompt.md.
-const OPENING_MESSAGE =
-  "আসসালামু আলাইকুম / নমস্কার! আমি ডিজিটাল ঢালের সহকারী। আপনি নিরাপদ জায়গায় এসেছেন — এখানে যা বলবেন তা সম্পূর্ণ গোপন থাকবে। একটু ধীরে ধীরে বলুন, কী হয়েছে?";
+import BreachCheck from "./BreachCheck.jsx";
+import { DhaalIcon } from "./Brand.jsx";
+import {
+  SendIcon,
+  MenuIcon,
+  CheckCircleIcon,
+  PlusIcon,
+  LockIcon,
+  BadgeCheckIcon,
+  ScanFaceIcon,
+  FileIcon,
+  VideoIcon,
+  EyeOffIcon,
+} from "./Icons.jsx";
 
 const CLOSED_STATUSES = new Set(["complete", "blocked_minor"]);
 
 export default function ChatWindow({
   userName,
-  phoneVerified,
+  verified = false,
   initialMessages = [],
   initialStatus = "collecting",
   cases = [],
   activeCaseId = null,
   caseEvents = [],
   caseStatus = "new",
+  kycStatus = "none",
+  breachCheck = null,
+  engineerMessage = "",
+  meetingLink = "",
+  engineerMessageAt = null,
   lang = "bn",
   t,
   bkashNumber = null,
 }) {
+  const kycVerified = kycStatus === "verified";
   const router = useRouter();
   const [messages, setMessages] = useState(
     initialMessages.length > 0
       ? initialMessages
-      : [{ role: "agent", text: OPENING_MESSAGE }],
+      : [{ role: "agent", text: t.chatui.greeting }],
   );
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -117,6 +133,118 @@ export default function ChatWindow({
 
   const showTimeline =
     activeCaseId && (done || (caseStatus && caseStatus !== "new"));
+  const resolved = caseStatus === "resolved" || caseStatus === "closed";
+
+  // Per-case security tools: breach/leak check, identity verification (demo),
+  // and — once the case is resolved — the downloadable incident report.
+  const securityTools = activeCaseId ? (
+    <div className="space-y-3">
+      <BreachCheck caseId={activeCaseId} initial={breachCheck} t={t.breach} lang={lang} />
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Link
+          href="/kyc"
+          className="dd-card hover-lift p-4 flex items-center gap-3 flex-1"
+        >
+          <div className="shrink-0 w-9 h-9 rounded-xl bg-[var(--color-primary-soft)] text-[var(--color-primary-dark)] flex items-center justify-center">
+            {kycVerified ? (
+              <BadgeCheckIcon width={18} height={18} />
+            ) : (
+              <ScanFaceIcon width={18} height={18} />
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="font-semibold text-sm leading-tight">
+              {kycVerified ? t.kyc.verifiedBadge : t.kyc.title}
+            </p>
+            <p className="text-xs text-[var(--color-muted)] leading-snug mt-0.5 truncate">
+              {kycVerified ? t.kyc.resultSub : t.kyc.sub}
+            </p>
+          </div>
+        </Link>
+        {resolved && (
+          <a
+            href={`/report/${activeCaseId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="dd-card hover-lift p-4 flex items-center gap-3 flex-1"
+          >
+            <div className="shrink-0 w-9 h-9 rounded-xl bg-[var(--color-primary-soft)] text-[var(--color-primary-dark)] flex items-center justify-center">
+              <FileIcon width={18} height={18} />
+            </div>
+            <div className="min-w-0">
+              <p className="font-semibold text-sm leading-tight">{t.report.download}</p>
+              <p className="text-xs text-[var(--color-muted)] leading-snug mt-0.5 font-mono">
+                PDF · {activeCaseId.slice(0, 8).toUpperCase()}
+              </p>
+            </div>
+          </a>
+        )}
+      </div>
+    </div>
+  ) : null;
+
+  // Engineer's message to the victim (with an optional meeting link). Rendered
+  // as its own prominent, catchable panel at the very top of the chat — this is
+  // how the engineer reaches her, so it must be impossible to miss.
+  const engineerCard = engineerMessage ? (
+    <div className="animate-fade-up rounded-2xl border-2 border-[var(--color-primary)]/35 bg-gradient-to-br from-[var(--color-primary-soft)] to-[var(--color-surface)] shadow-md overflow-hidden">
+      <div className="bg-[var(--color-primary)] text-white px-5 py-2.5 flex items-center gap-2">
+        <BadgeCheckIcon width={17} height={17} />
+        <span className="font-semibold text-[15px]">{c.engineerMsgTitle}</span>
+        {engineerMessageAt && (
+          <span className="ml-auto text-[11px] text-white/85 font-mono">
+            {new Date(engineerMessageAt).toLocaleString(locale, {
+              day: "numeric",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+        )}
+      </div>
+      <div className="p-5">
+        <p className="text-[16px] leading-relaxed whitespace-pre-wrap text-[var(--color-text)]">
+          {engineerMessage}
+        </p>
+        {meetingLink && (
+          <div className="mt-4 rounded-xl border border-[var(--color-primary)]/25 bg-[var(--color-surface)] p-3.5 flex flex-col sm:flex-row sm:items-center gap-3">
+            <span className="w-12 h-12 rounded-xl bg-[var(--color-primary-soft)] text-[var(--color-primary-dark)] flex items-center justify-center shrink-0">
+              <VideoIcon width={24} height={24} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-bold leading-tight">{c.joinCallTitle}</p>
+              <p className="text-xs text-[var(--color-muted)] font-mono truncate">{meetingLink}</p>
+            </div>
+            <a
+              href={meetingLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white px-6 py-3 text-[15px] font-bold transition-all hover:shadow-md"
+            >
+              <VideoIcon width={19} height={19} />
+              {c.joinCall}
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  ) : null;
+
+  // Minimal, post-service review — only shown once the case is resolved.
+  const reviewBlock = resolved ? (
+    <div className="animate-fade-up space-y-3 pt-1">
+      <div className="dd-card p-5 flex items-start gap-3">
+        <span className="w-10 h-10 shrink-0 rounded-full bg-green-100 text-green-700 flex items-center justify-center">
+          <CheckCircleIcon width={22} height={22} />
+        </span>
+        <div>
+          <h3 className="font-bold">{c.resolvedTitle}</h3>
+          <p className="text-sm text-[var(--color-muted)] leading-relaxed mt-0.5">{c.resolvedSub}</p>
+        </div>
+      </div>
+      <SupportSection t={t} bkashNumber={bkashNumber} compact />
+    </div>
+  ) : null;
 
   return (
     <div className="flex h-dvh bg-[var(--color-bg)]">
@@ -131,7 +259,7 @@ export default function ChatWindow({
 
       <div className="flex flex-col flex-1 min-w-0">
         {/* Top bar */}
-        <header className="bg-white border-b border-black/5 px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+        <header className="bg-gradient-to-r from-white via-white to-[var(--color-primary-soft)] border-b border-black/5 px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -140,11 +268,9 @@ export default function ChatWindow({
             >
               <MenuIcon width={18} height={18} />
             </button>
-            <div className="w-9 h-9 shrink-0 rounded-xl bg-[var(--color-primary)] flex items-center justify-center text-white text-sm font-bold">
-              ঢাল
-            </div>
+            <DhaalIcon size={38} className="shrink-0" />
             <div className="min-w-0">
-              <p className="font-bold leading-tight truncate">Digital Dhaal</p>
+              <p className="font-bold text-[17px] leading-tight truncate">Digital Dhaal</p>
               <p className="text-xs text-[var(--color-muted)] leading-tight flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
                 {c.confidential}
@@ -163,6 +289,16 @@ export default function ChatWindow({
             )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <span className="dd-chip dd-chip-secure hidden md:inline-flex">
+              <LockIcon width={11} height={11} />
+              {t.security.secureSession}
+            </span>
+            {kycVerified && (
+              <span className="dd-chip dd-chip-secure hidden lg:inline-flex">
+                <BadgeCheckIcon width={11} height={11} />
+                {t.security.idVerified}
+              </span>
+            )}
             <span className="hidden sm:block text-sm text-[var(--color-muted)]">{userName}</span>
             <button
               onClick={handleLogout}
@@ -173,11 +309,37 @@ export default function ChatWindow({
           </div>
         </header>
 
-        {!phoneVerified && <PhoneVerify t={c} tv={t.verify} />}
+        {/* Cyber trust strip — a slim partition that keeps the calm security
+            register visible and reassures "we never ask for passwords". */}
+        <div className="dd-cyber-grid border-b border-black/5">
+          <div className="max-w-3xl mx-auto px-4 py-1.5 flex items-center gap-2 flex-wrap">
+            <span className="dd-chip dd-chip-dark">
+              <LockIcon width={11} height={11} />
+              {t.security.chipEncrypted}
+            </span>
+            <span className="dd-chip dd-chip-dark">
+              <EyeOffIcon width={11} height={11} />
+              {t.security.chipConfidential}
+            </span>
+            {verified && (
+              <span className="dd-chip dd-chip-dark">
+                <BadgeCheckIcon width={11} height={11} />
+                {t.security.chipVerified}
+              </span>
+            )}
+            <span className="ml-auto hidden sm:inline font-mono text-[11px] text-[var(--color-cyber)]/85">
+              {c.neverAsk}
+            </span>
+          </div>
+        </div>
+
+        {!verified && <PhoneVerify t={c} tv={t.verify} />}
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto bg-gradient-to-b from-transparent to-[var(--color-primary-soft)]/30">
           <div className="max-w-3xl mx-auto px-4 py-5 space-y-4">
+            {engineerCard}
+
             {messages.map((m, i) => (
               <div
                 key={i}
@@ -186,16 +348,16 @@ export default function ChatWindow({
                 }`}
               >
                 {m.role !== "user" && (
-                  <div className="w-7 h-7 shrink-0 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-[10px] font-bold mb-4">
-                    ঢাল
-                  </div>
+                  <span className="shrink-0 mb-4 w-8 h-8 rounded-full bg-white shadow-sm ring-1 ring-black/5 flex items-center justify-center">
+                    <DhaalIcon size={20} />
+                  </span>
                 )}
                 <div className={`max-w-[85%] sm:max-w-[72%] ${m.role === "user" ? "text-right" : ""}`}>
                   <div
-                    className={`inline-block text-left rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-wrap ${
+                    className={`inline-block text-left rounded-2xl px-4 py-3 text-[16px] leading-relaxed whitespace-pre-wrap ${
                       m.role === "user"
-                        ? "bg-[var(--color-bubble-user)] text-white rounded-br-md shadow-sm"
-                        : "bg-white border border-black/5 shadow-sm text-[var(--color-text)] rounded-bl-md"
+                        ? "bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-dark)] text-white rounded-br-md shadow-md shadow-[var(--color-primary)]/25"
+                        : "bg-white border border-black/[0.06] shadow-md shadow-black/[0.03] text-[var(--color-text)] rounded-bl-md"
                     }`}
                   >
                     {m.text}
@@ -211,10 +373,10 @@ export default function ChatWindow({
 
             {sending && (
               <div className="flex items-end gap-2 justify-start animate-fade-up">
-                <div className="w-7 h-7 shrink-0 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-[10px] font-bold">
-                  ঢাল
-                </div>
-                <div className="rounded-2xl rounded-bl-md bg-white border border-black/5 shadow-sm px-4 py-3 flex items-center gap-1.5">
+                <span className="shrink-0 w-8 h-8 rounded-full bg-white shadow-sm ring-1 ring-black/5 flex items-center justify-center">
+                  <DhaalIcon size={20} />
+                </span>
+                <div className="rounded-2xl rounded-bl-md bg-white border border-black/[0.06] shadow-md shadow-black/[0.03] px-4 py-3 flex items-center gap-1.5">
                   <span className="typing-dot" />
                   <span className="typing-dot" />
                   <span className="typing-dot" />
@@ -269,12 +431,12 @@ export default function ChatWindow({
                   />
                 )}
 
-                <SupportSection t={t} bkashNumber={bkashNumber} compact />
+                {securityTools}
               </div>
             )}
 
             {!done && showTimeline && (
-              <div className="animate-fade-up pt-2">
+              <div className="animate-fade-up pt-2 space-y-4">
                 <CaseProgress
                   events={caseEvents}
                   caseStatus={caseStatus}
@@ -282,8 +444,11 @@ export default function ChatWindow({
                   title={c.progressTitle}
                   lang={lang}
                 />
+                {securityTools}
               </div>
             )}
+
+            {reviewBlock}
 
             <div ref={bottomRef} />
           </div>

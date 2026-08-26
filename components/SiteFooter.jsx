@@ -1,18 +1,35 @@
 import Link from "next/link";
+import { DhaalMark } from "./Brand.jsx";
+import { LockIcon, BadgeCheckIcon, EyeOffIcon } from "./Icons.jsx";
 
 export default function SiteFooter({ t }) {
   const f = t.footer;
+  const sec = t.security;
   return (
     <footer className="border-t border-black/5 bg-white mt-4">
       <div className="max-w-6xl mx-auto px-5 py-12 grid sm:grid-cols-3 gap-10 text-[15px]">
         <div>
           <div className="flex items-center gap-2.5 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-xs">
-              ঢাল
-            </div>
+            <DhaalMark size={30} />
             <span className="font-bold">Digital Dhaal</span>
           </div>
           <p className="text-[var(--color-muted)]">{f.tagline}</p>
+          {sec && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              <span className="dd-chip dd-chip-secure">
+                <LockIcon width={11} height={11} />
+                {sec.chipEncrypted}
+              </span>
+              <span className="dd-chip dd-chip-secure">
+                <EyeOffIcon width={11} height={11} />
+                {sec.chipConfidential}
+              </span>
+              <span className="dd-chip dd-chip-secure">
+                <BadgeCheckIcon width={11} height={11} />
+                {sec.chipVerified}
+              </span>
+            </div>
+          )}
         </div>
 
         <div>

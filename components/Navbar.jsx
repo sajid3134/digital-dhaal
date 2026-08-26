@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import LanguageToggle from "./LanguageToggle.jsx";
-import { MenuIcon, XIcon } from "./Icons.jsx";
+import { DhaalMark } from "./Brand.jsx";
+import { MenuIcon, XIcon, LockIcon } from "./Icons.jsx";
 
-export default function Navbar({ lang, nav, loggedIn }) {
+export default function Navbar({ lang, nav, loggedIn, secureLabel }) {
   const [open, setOpen] = useState(false);
 
   const links = [
@@ -20,10 +21,14 @@ export default function Navbar({ lang, nav, loggedIn }) {
     <header className="sticky top-0 z-30 backdrop-blur-md bg-white/85 border-b border-black/5">
       <div className="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between gap-3">
         <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-          <div className="w-9 h-9 rounded-xl bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-sm shadow-sm group-hover:shadow-md transition-shadow">
-            ঢাল
-          </div>
+          <DhaalMark size={34} className="transition-transform group-hover:scale-105" />
           <span className="font-bold text-lg tracking-tight">Digital Dhaal</span>
+          {secureLabel && (
+            <span className="dd-chip dd-chip-secure hidden sm:inline-flex ml-1">
+              <LockIcon width={11} height={11} />
+              {secureLabel}
+            </span>
+          )}
         </Link>
 
         <nav className="hidden lg:flex items-center gap-1">

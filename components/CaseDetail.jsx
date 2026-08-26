@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { FileIcon, VideoIcon } from "./Icons.jsx";
+import TakedownPlaybook from "./TakedownPlaybook.jsx";
 
 const WORKFLOW_OPTIONS = [
   ["new", "New"],
@@ -23,6 +25,8 @@ function renderAgentTurn(raw) {
 const EVENT_LABELS = {
   created: "Case created",
   submitted: "Intake completed — entered engineer queue",
+  breach_checked: "Data-breach check performed",
+  engineer_message: "Message sent to victim",
   verifying: "Identity verification started",
   contacted: "Victim contacted",
   in_progress: "Resolution in progress",
@@ -31,9 +35,11 @@ const EVENT_LABELS = {
 };
 
 export default function CaseDetail({ caseData, events = [] }) {
-  const { caseCard, conversation, flags, pillar, status, severity, user } = caseData;
+  const { caseCard, conversation, flags, pillar, status, severity, user, breachCheck } = caseData;
   const [caseStatus, setCaseStatus] = useState(caseData.caseStatus);
   const [notes, setNotes] = useState(caseData.engineerNotes);
+  const [victimMsg, setVictimMsg] = useState(caseData.engineerMessage ?? "");
+  const [meetingLink, setMeetingLink] = useState(caseData.meetingLink ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
@@ -46,7 +52,12 @@ export default function CaseDetail({ caseData, events = [] }) {
       const res = await fetch(`/api/admin/cases/${caseData.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ caseStatus, engineerNotes: notes }),
+        body: JSON.stringify({
+          caseStatus,
+          engineerNotes: notes,
+          engineerMessage: victimMsg,
+          meetingLink,
+        }),
       });
       if (!res.ok) {
         setError("Save failed — try again.");
@@ -63,9 +74,18 @@ export default function CaseDetail({ caseData, events = [] }) {
 
   return (
     <div className="space-y-5">
-      <Link href="/admin" className="text-sm text-[var(--color-primary)] hover:underline">
-        ← Back to case queue
-      </Link>
+      <div className="flex items-center justify-between gap-3">
+        <Link href="/admin" className="text-sm text-[var(--color-primary)] hover:underline">
+          ← Back to case queue
+        </Link>
+        <Link
+          href={`/admin/${caseData.id}/report`}
+          className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-primary)]/30 bg-[var(--color-primary-soft)] text-[var(--color-primary-dark)] px-4 py-2 text-sm font-semibold hover:bg-[var(--color-primary)]/10 transition-colors"
+        >
+          <FileIcon width={15} height={15} />
+          Download incident report
+        </Link>
+      </div>
 
       <div>
         <h1 className="text-xl font-bold">Case {caseData.id.slice(0, 8)}</h1>
@@ -92,7 +112,12 @@ export default function CaseDetail({ caseData, events = [] }) {
         {user ? (
           <div className="grid sm:grid-cols-3 gap-2">
             <p><span className="text-gray-500">Name:</span> {user.name}</p>
-            <p><span className="text-gray-500">Email:</span> {user.email}</p>
+            <p>
+              <span className="text-gray-500">Email:</span> {user.email}{" "}
+              {user.emailVerified && (
+                <span className="text-green-600 font-semibold">✓ verified</span>
+              )}
+            </p>
             <p>
               <span className="text-gray-500">Phone:</span>{" "}
               {user.phone ?? "not provided"}{" "}
@@ -102,10 +127,107 @@ export default function CaseDetail({ caseData, events = [] }) {
                 <span className="text-amber-600">(unverified)</span>
               )}
             </p>
+            <p>
+              <span className="text-gray-500">Identity (KYC):</span>{" "}
+              {user.kycStatus === "verified" ? (
+                <span className="text-green-600 font-semibold">✓ verified (demo)</span>
+              ) : (
+                <span className="text-gray-400">not completed</span>
+              )}
+            </p>
           </div>
         ) : (
           <p className="text-gray-400">No account linked (legacy case)</p>
         )}
+      </div>
+
+      {/* Data-breach check result (run by the victim during intake) */}
+      {breachCheck && (
+        <div className="dd-card p-4 text-sm">
+          <h2 className="font-semibold mb-2">Data-breach check</h2>
+          <p className="text-gray-600">
+            Checked <span className="font-mono">{breachCheck.query}</span>{" "}
+            <span className="text-gray-400 text-xs">· {breachCheck.source}</span>
+          </p>
+          {breachCheck.status === "found" ? (
+            <div className="mt-2">
+              <p className="text-amber-700 font-semibold">
+                Exposed in {breachCheck.breaches.length} breach
+                {breachCheck.breaches.length === 1 ? "" : "es"}:
+              </p>
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                {breachCheck.breaches.map((b) => (
+                  <span
+                    key={b}
+                    className="font-mono text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded px-1.5 py-0.5"
+                  >
+                    {b}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : breachCheck.status === "clean" ? (
+            <p className="text-green-600 mt-2 font-medium">No exposure found in known breaches.</p>
+          ) : (
+            <p className="text-gray-500 mt-2">Phone identifiers not covered by the breach source.</p>
+          )}
+        </div>
+      )}
+
+      {/* Image-takedown toolkit — the constant procedure + per-platform routes */}
+      <TakedownPlaybook pillar={pillar} />
+
+      {/* Contact the victim — message + meeting link, delivered in her chat */}
+      <div className="dd-card p-4 space-y-3">
+        <div>
+          <h2 className="font-semibold text-sm">Message the victim</h2>
+          <p className="text-xs text-gray-500 mt-0.5">
+            This appears in the victim's chat as a message from her engineer. Paste a Google
+            Meet / Zoom / Teams link to invite her to a call — she gets a "Join secure call"
+            button. Delivered inside the platform; no email needed.
+          </p>
+        </div>
+        <textarea
+          value={victimMsg}
+          onChange={(e) => setVictimMsg(e.target.value)}
+          placeholder="e.g. Hi Mira, I've reviewed your case. Let's do a quick call so I can guide the recovery — join using the button below at 5pm today."
+          rows={3}
+          maxLength={2000}
+          className="w-full rounded-xl border border-black/10 px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)] resize-y"
+        />
+        <input
+          value={meetingLink}
+          onChange={(e) => setMeetingLink(e.target.value)}
+          placeholder="Paste a Google Meet / Zoom / Teams link (optional) — https://…"
+          type="url"
+          className="w-full rounded-xl border border-black/10 px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)] font-mono"
+        />
+        {meetingLink && (
+          <a
+            href={meetingLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm text-[var(--color-primary)] hover:underline"
+          >
+            <VideoIcon width={15} height={15} />
+            Test this call link ↗ — the victim sees a "Join the call" button
+          </a>
+        )}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={save}
+            disabled={saving}
+            className="rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white px-5 py-2 text-sm font-semibold transition-colors disabled:opacity-50"
+          >
+            {saving ? "Sending…" : "Send to victim"}
+          </button>
+          {saved && <span className="text-green-600 text-sm">✓ Sent</span>}
+          {caseData.engineerMessageAt && !saved && (
+            <span className="text-xs text-gray-400">
+              Last sent {new Date(caseData.engineerMessageAt).toLocaleString()}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Engineer workflow */}

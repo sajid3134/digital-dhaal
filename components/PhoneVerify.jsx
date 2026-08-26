@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PhoneIcon } from "./Icons.jsx";
+import { PhoneIcon, MailIcon, LockIcon } from "./Icons.jsx";
 
-// Slim banner + inline flow to verify a phone number from inside the chat
-// (for users who skipped the /verify step). Demo mode: code prints to the
-// server terminal instead of a real SMS.
+// Slim in-chat banner to verify identity for users who skipped the /verify
+// step. Offers email OR phone. Demo mode: code prints to the server terminal.
 export default function PhoneVerify({ t, tv }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [step, setStep] = useState("phone");
+  const [method, setMethod] = useState("email");
+  const [step, setStep] = useState("send"); // "send" | "code" | "done"
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
@@ -42,7 +42,8 @@ export default function PhoneVerify({ t, tv }) {
 
   async function sendCode(e) {
     e.preventDefault();
-    const data = await post("/api/auth/otp/send", { phone });
+    const body = method === "email" ? { method: "email" } : { method: "phone", phone };
+    const data = await post("/api/auth/otp/send", body);
     if (data) {
       setNotice(data.message || "");
       setStep("code");
@@ -66,13 +67,28 @@ export default function PhoneVerify({ t, tv }) {
     );
   }
 
+  const chip = (m, Icon, label) => (
+    <button
+      type="button"
+      onClick={() => setMethod(m)}
+      className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors ${
+        method === m
+          ? "bg-amber-500 text-white"
+          : "bg-white text-amber-800 border border-amber-200"
+      }`}
+    >
+      <Icon width={12} height={12} />
+      {label}
+    </button>
+  );
+
   return (
     <div className="bg-amber-50 border-b border-amber-100">
       <div className="max-w-3xl mx-auto px-4 py-2.5">
         {!open ? (
           <div className="flex items-center justify-between gap-3 text-sm">
             <span className="text-amber-800 flex items-center gap-2">
-              <PhoneIcon width={15} height={15} />
+              <LockIcon width={15} height={15} />
               {t.verifyBanner}
             </span>
             <button
@@ -82,47 +98,61 @@ export default function PhoneVerify({ t, tv }) {
               {t.verifyAction}
             </button>
           </div>
+        ) : step === "send" ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-amber-800">{tv.chooseMethod}</span>
+              {chip("email", MailIcon, tv.methodEmail)}
+              {chip("phone", PhoneIcon, tv.methodPhone)}
+            </div>
+            <form onSubmit={sendCode} className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+              {method === "phone" && (
+                <input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder={tv.phonePlaceholder}
+                  inputMode="numeric"
+                  required
+                  className="flex-1 rounded-xl border border-amber-200 bg-white px-3.5 py-2 text-sm outline-none focus:border-amber-400"
+                />
+              )}
+              {method === "email" && (
+                <span className="flex-1 text-xs text-amber-800 self-center">{tv.emailWhy}</span>
+              )}
+              <button
+                type="submit"
+                disabled={busy}
+                className="rounded-xl bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50"
+              >
+                {busy ? tv.sending : method === "email" ? tv.sendEmailBtn : tv.sendBtn}
+              </button>
+            </form>
+          </div>
         ) : (
-          <form
-            onSubmit={step === "phone" ? sendCode : verifyCode}
-            className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center"
-          >
-            {step === "phone" ? (
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder={tv.phonePlaceholder}
-                inputMode="numeric"
-                required
-                className="flex-1 rounded-xl border border-amber-200 bg-white px-3.5 py-2 text-sm outline-none focus:border-amber-400"
-              />
-            ) : (
-              <input
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder={tv.codePlaceholder}
-                inputMode="numeric"
-                maxLength={6}
-                required
-                className="flex-1 rounded-xl border border-amber-200 bg-white px-3.5 py-2 text-sm outline-none focus:border-amber-400"
-              />
-            )}
+          <form onSubmit={verifyCode} className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+            <input
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder={tv.codePlaceholder}
+              inputMode="numeric"
+              maxLength={6}
+              required
+              className="flex-1 rounded-xl border border-amber-200 bg-white px-3.5 py-2 text-sm outline-none focus:border-amber-400"
+            />
             <button
               type="submit"
               disabled={busy}
               className="rounded-xl bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50"
             >
-              {busy ? "…" : step === "phone" ? tv.sendBtn : tv.verifyBtn}
+              {busy ? tv.verifying : tv.verifyBtn}
             </button>
-            {step === "code" && (
-              <button
-                type="button"
-                onClick={() => setStep("phone")}
-                className="text-xs text-amber-800 underline"
-              >
-                {tv.changeNumber}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => { setStep("send"); setCode(""); setNotice(""); }}
+              className="text-xs text-amber-800 underline"
+            >
+              {tv.changeMethod}
+            </button>
           </form>
         )}
         {notice && open && <p className="text-xs text-amber-700 mt-1.5">{notice}</p>}

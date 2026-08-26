@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { PhoneIcon, CheckCircleIcon } from "./Icons.jsx";
+import { PhoneIcon, MailIcon, CheckCircleIcon, LockIcon } from "./Icons.jsx";
 
-// Full-page phone verification shown right after signup.
-// Demo mode: the code prints in the server terminal instead of a real SMS.
-export default function VerifyPhone({ userName, t }) {
+// Identity verification after signup. The user chooses email OR phone; a code
+// is sent (demo mode: printed to the server terminal) and confirmed here.
+export default function VerifyPhone({ userName, userEmail, t }) {
   const router = useRouter();
-  const [step, setStep] = useState("phone");
+  const [method, setMethod] = useState("email"); // "email" | "phone"
+  const [step, setStep] = useState("send"); // "send" | "code" | "done"
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
@@ -41,7 +42,8 @@ export default function VerifyPhone({ userName, t }) {
 
   async function sendCode(e) {
     e.preventDefault();
-    const data = await post("/api/auth/otp/send", { phone });
+    const body = method === "email" ? { method: "email" } : { method: "phone", phone };
+    const data = await post("/api/auth/otp/send", body);
     if (data) {
       setNotice(data.message || "");
       setStep("code");
@@ -63,6 +65,25 @@ export default function VerifyPhone({ userName, t }) {
   const inputClass =
     "w-full rounded-xl border border-black/10 bg-white px-4 py-3.5 text-lg text-center tracking-wide outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20";
 
+  const methodBtn = (m, Icon, label) => (
+    <button
+      type="button"
+      onClick={() => {
+        setMethod(m);
+        setError("");
+        setNotice("");
+      }}
+      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+        method === m
+          ? "bg-[var(--color-primary)] text-white shadow-sm"
+          : "text-[var(--color-muted)] hover:text-[var(--color-text)]"
+      }`}
+    >
+      <Icon width={16} height={16} />
+      {label}
+    </button>
+  );
+
   return (
     <div className="w-full max-w-md dd-card p-8 animate-fade-up">
       {step === "done" ? (
@@ -75,9 +96,9 @@ export default function VerifyPhone({ userName, t }) {
         </div>
       ) : (
         <>
-          <div className="text-center mb-7">
+          <div className="text-center mb-6">
             <div className="w-14 h-14 mx-auto rounded-2xl bg-[var(--color-primary-soft)] text-[var(--color-primary-dark)] flex items-center justify-center mb-4">
-              <PhoneIcon width={26} height={26} />
+              {method === "email" ? <MailIcon width={26} height={26} /> : <PhoneIcon width={26} height={26} />}
             </div>
             <h2 className="text-xl font-bold mb-2">
               {userName ? `${userName}, ` : ""}
@@ -86,26 +107,46 @@ export default function VerifyPhone({ userName, t }) {
             <p className="text-[15px] text-[var(--color-muted)] leading-relaxed">{t.why}</p>
           </div>
 
-          {step === "phone" ? (
-            <form onSubmit={sendCode} className="space-y-4">
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder={t.phonePlaceholder}
-                inputMode="numeric"
-                required
-                autoFocus
-                className={inputClass}
-              />
-              <button
-                type="submit"
-                disabled={busy}
-                className="w-full rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white py-3.5 font-semibold transition-colors disabled:opacity-50"
-              >
-                {busy ? t.sending : t.sendBtn}
-              </button>
-            </form>
-          ) : (
+          {step === "send" && (
+            <>
+              <p className="text-xs font-semibold text-[var(--color-muted)] mb-2">{t.chooseMethod}</p>
+              <div className="flex gap-1 p-1 bg-black/5 rounded-2xl mb-5">
+                {methodBtn("email", MailIcon, t.methodEmail)}
+                {methodBtn("phone", PhoneIcon, t.methodPhone)}
+              </div>
+
+              <form onSubmit={sendCode} className="space-y-4">
+                {method === "email" ? (
+                  <div className="rounded-xl bg-[var(--color-primary-soft)] border border-[var(--color-primary)]/15 px-4 py-3 text-sm">
+                    <p className="text-[var(--color-muted)]">{t.emailWhy}</p>
+                    {userEmail && <p className="font-mono text-[var(--color-primary-dark)] mt-1 break-all">{userEmail}</p>}
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-[var(--color-muted)]">{t.phoneWhy}</p>
+                    <input
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder={t.phonePlaceholder}
+                      inputMode="numeric"
+                      required
+                      autoFocus
+                      className={inputClass}
+                    />
+                  </>
+                )}
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="w-full rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white py-3.5 font-semibold transition-colors disabled:opacity-50"
+                >
+                  {busy ? t.sending : method === "email" ? t.sendEmailBtn : t.sendBtn}
+                </button>
+              </form>
+            </>
+          )}
+
+          {step === "code" && (
             <form onSubmit={verifyCode} className="space-y-4">
               <input
                 value={code}
@@ -126,10 +167,14 @@ export default function VerifyPhone({ userName, t }) {
               </button>
               <button
                 type="button"
-                onClick={() => setStep("phone")}
+                onClick={() => {
+                  setStep("send");
+                  setCode("");
+                  setNotice("");
+                }}
                 className="w-full text-sm text-[var(--color-muted)] hover:text-[var(--color-text)] transition-colors"
               >
-                ← {t.changeNumber}
+                ← {t.changeMethod}
               </button>
             </form>
           )}
@@ -137,7 +182,12 @@ export default function VerifyPhone({ userName, t }) {
           {notice && <p className="text-sm text-amber-700 bg-amber-50 rounded-xl px-4 py-2.5 mt-4">{notice}</p>}
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-2.5 mt-4">{error}</p>}
 
-          <p className="text-center mt-6">
+          <p className="flex items-center justify-center gap-1.5 text-xs text-[var(--color-muted)] mt-5">
+            <LockIcon width={13} height={13} className="text-[var(--color-primary)]" />
+            {t.noPassword}
+          </p>
+
+          <p className="text-center mt-3">
             <Link
               href="/chat"
               className="text-sm text-[var(--color-muted)] hover:text-[var(--color-text)] underline underline-offset-2 transition-colors"

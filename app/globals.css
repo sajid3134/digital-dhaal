@@ -16,6 +16,21 @@
   --color-high: #d97706;
   --color-standard: #16a34a;
   --color-star: #f59e0b;
+  /* Dark "security" register — the ~20% cyber-firm accent. Deep teal-ink,
+     never alarming red. Used for the trust band and encrypted/verified chips. */
+  --color-ink: #0a1420;
+  --color-ink-soft: #12212f;
+  --color-cyber: #6ee0d2;
+}
+
+/* Mono is scoped to opt-in accents (case IDs, encrypted/verified labels,
+   the trust band) — the body stays Hind Siliguri for warmth and Bangla. */
+.font-mono,
+code,
+kbd,
+samp {
+  font-family: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular",
+    "Menlo", monospace;
 }
 
 /* Slightly larger base type across the whole app — readable, less cramped */
@@ -95,4 +110,64 @@ section[id] {
   transform: translateY(-4px);
   border-color: rgb(13 148 136 / 0.25);
   box-shadow: 0 4px 8px rgb(15 23 42 / 0.04), 0 18px 44px -16px rgb(13 148 136 / 0.28);
+}
+
+/* ---------- Security register (the calm ~20% cyber-firm feel) ---------- */
+
+/* Small "encrypted / verified" chip. Understated by design — the whole point
+   is reassurance, not alarm. */
+.dd-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.dd-chip-secure {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+  border: 1px solid rgb(13 148 136 / 0.2);
+}
+.dd-chip-dark {
+  background: rgb(110 224 210 / 0.12);
+  color: var(--color-cyber);
+  border: 1px solid rgb(110 224 210 / 0.2);
+}
+
+/* Faint node-grid texture behind the dark trust band — reads as "network",
+   stays subtle so it never competes with the message. */
+.dd-cyber-grid {
+  background-color: var(--color-ink);
+  background-image:
+    radial-gradient(rgb(110 224 210 / 0.09) 1px, transparent 1px),
+    radial-gradient(rgb(110 224 210 / 0.06) 1px, transparent 1px);
+  background-size: 22px 22px, 22px 22px;
+  background-position: 0 0, 11px 11px;
+}
+
+/* Soft live-status pulse used on "secure session" dots */
+@keyframes securePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.82); }
+}
+.secure-dot {
+  animation: securePulse 2.4s ease-in-out infinite;
+}
+
+/* ---------- Incident report (print to PDF) ---------- */
+@media print {
+  .no-print { display: none !important; }
+  .report-page {
+    box-shadow: none !important;
+    margin: 0 !important;
+    border: 0 !important;
+  }
+  body { background: #ffffff !important; }
+  @page { size: A4; margin: 16mm 14mm; }
 }

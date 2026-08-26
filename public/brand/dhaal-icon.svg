@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="220" viewBox="0 0 200 220" role="img" aria-label="Digital Dhaal icon">
+  <defs>
+    <linearGradient id="dhaalIcon" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#12A99B"/>
+      <stop offset="1" stop-color="#0B5750"/>
+    </linearGradient>
+  </defs>
+  <path d="M100 16 L174 44 L174 116 C174 170 140 198 100 214 C60 198 26 170 26 116 L26 44 Z" fill="url(#dhaalIcon)"/>
+  <path d="M68 112 L91 136 L135 84" fill="none" stroke="#ffffff" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

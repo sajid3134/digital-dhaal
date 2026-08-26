@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LatteCup, HeartIcon, CheckCircleIcon } from "./Icons.jsx";
+import { CoffeeIcon, HeartIcon, CheckCircleIcon } from "./Icons.jsx";
 
 const DISPLAY_AMOUNTS = { latte_large: 200, latte_regular: 100, hug: 0 };
 
@@ -22,16 +22,15 @@ export default function SupportSection({ t, bkashNumber = null, compact = false 
   const paidTier = DISPLAY_AMOUNTS[tier] > 0;
 
   const TIERS = [
+    { id: "latte_large", label: s.tierLatteL, note: s.tierLatteLNote, icon: <CoffeeIcon width={15} height={15} /> },
     { id: "hug", label: s.tierHug, note: s.tierHugNote, icon: <HeartIcon width={15} height={15} /> },
-    { id: "latte_regular", label: s.tierLatteR, note: s.tierLatteRNote, icon: <LatteCup size={16} /> },
-    { id: "latte_large", label: s.tierLatteL, note: s.tierLatteLNote, icon: <LatteCup size={16} /> },
   ];
 
   async function submit(e) {
     e.preventDefault();
     setError("");
     if (rating < 1) return setError(s.needRating);
-    if (review.trim().length < 5) return setError(s.needReview);
+    // Review is optional now — a rating alone is enough.
     setBusy(true);
     try {
       const res = await fetch("/api/feedback", {
@@ -98,7 +97,7 @@ export default function SupportSection({ t, bkashNumber = null, compact = false 
         value={review}
         onChange={(e) => setReview(e.target.value)}
         placeholder={s.reviewPlaceholder}
-        rows={3}
+        rows={2}
         maxLength={1000}
         className="w-full rounded-xl border border-black/10 px-4 py-3 text-[15px] outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 resize-none mb-5"
       />

@@ -45,6 +45,10 @@ export default async function ChatPage() {
   let activeCaseId = null;
   let caseEvents = [];
   let caseStatus = "new";
+  let breachCheck = null;
+  let engineerMessage = "";
+  let meetingLink = "";
+  let engineerMessageAt = null;
 
   if (sessionId) {
     const caseRow = getCaseById(sessionId);
@@ -54,6 +58,10 @@ export default async function ChatPage() {
       initialStatus = caseRow.status;
       activeCaseId = caseRow.id;
       caseStatus = caseRow.caseStatus;
+      breachCheck = caseRow.breachCheck;
+      engineerMessage = caseRow.engineerMessage;
+      meetingLink = caseRow.meetingLink;
+      engineerMessageAt = caseRow.engineerMessageAt;
       // Safe subset for the victim: event types + timestamps only.
       caseEvents = listCaseEvents(caseRow.id);
     }
@@ -63,13 +71,18 @@ export default async function ChatPage() {
     <ChatWindow
       key={activeCaseId ?? "new"}
       userName={user.name}
-      phoneVerified={user.phoneVerified}
+      verified={user.verified}
       initialMessages={initialMessages}
       initialStatus={initialStatus}
       cases={cases}
       activeCaseId={activeCaseId}
       caseEvents={caseEvents}
       caseStatus={caseStatus}
+      kycStatus={user.kycStatus}
+      breachCheck={breachCheck}
+      engineerMessage={engineerMessage}
+      meetingLink={meetingLink}
+      engineerMessageAt={engineerMessageAt}
       lang={lang}
       t={t}
       bkashNumber={process.env.BKASH_NUMBER || null}
